@@ -1,13 +1,14 @@
-# Add further checks for valid FEN strings such as castling rights
+# TODO: Add further checks for valid FEN strings such as castling rights
+
 using StaticArrays
 
 function board_from_fen(fen::String)
     parts = split(fen)
-    @assert length(parts) >= 4 "FEN must have at least 4 fields"
+    @assert length(parts)>=4 "FEN must have at least 4 fields"
 
     # Piece placement
     rows = split(parts[1], '/')
-    @assert length(rows) == 8 "FEN must have 8 ranks"
+    @assert length(rows)==8 "FEN must have 8 ranks"
 
     # Temporary mutable vector for bitboards
     bb_vec = zeros(UInt64, NUM_PIECES)
@@ -32,7 +33,7 @@ function board_from_fen(fen::String)
                 file += 1
             end
         end
-        @assert file == 8 "Each rank must have 8 squares"
+        @assert file==8 "Each rank must have 8 squares"
     end
 
     bitboards = MVector{NUM_PIECES, UInt64}(bb_vec)

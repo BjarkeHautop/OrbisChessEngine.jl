@@ -103,14 +103,16 @@ end
 
 function check_piece_moves!(board::Board, pseudo, pseudo_len, gen_func,
         side, king_sq, occ, in_check_now)
-    old_len = pseudo_len[]
-    pseudo_len[] = gen_func(board, pseudo, pseudo_len[])
-    @inbounds for i in old_len:(pseudo_len[] - 1)
+    old_len = pseudo_len
+    pseudo_len = gen_func(board, pseudo, pseudo_len)
+
+    @inbounds for i in old_len:(pseudo_len - 1)
         if is_move_legal(board, pseudo[i], side, king_sq, occ, in_check_now)
-            return true
+            return true, pseudo_len
         end
     end
-    return false
+
+    return false, pseudo_len
 end
 
 # Start with king if in check to find legal moves faster
@@ -129,14 +131,13 @@ function has_legal_move(board::Board)::Bool
     occ = occupancy(board)
     in_check_now = in_check(board, side)
 
-    pseudo_len = Ref(1)
+    pseudo_len = 1
 
     gens = in_check_now ? GEN_CHECKS_IN_CHECK : GEN_CHECKS_NORMAL
     @inbounds for gen_func in gens
-        if check_piece_moves!(
+        ok, pseudo_len = check_piece_moves!(
             board, pseudo, pseudo_len, gen_func, side, king_sq, occ, in_check_now)
-            return true
-        end
+        ok && return true
     end
 
     return false
@@ -154,7 +155,7 @@ function generate_legal_moves!(board::Board, moves, pseudo)
 
     n_moves = 0
     # pseudo_len is one past the end
-    n_moves = _filter_legal_moves!(board, pseudo, 1, pseudo_len-1, moves, n_moves)
+    n_moves = _filter_legal_moves!(board, pseudo, 1, pseudo_len - 1, moves, n_moves)
     return n_moves
 end
 
