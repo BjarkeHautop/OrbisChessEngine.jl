@@ -7,6 +7,12 @@ repos:
         entry: found forbidden files; remove them before committing
         language: fail
         files: "\\.rej$|\\.pb\\.gz$"
+
+      - id: julia-formatter
+        name: julia-formatter
+        entry: "julia --project=. -e 'using JuliaFormatter; format(\".\")'"
+        language: system
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
@@ -41,7 +47,3 @@ repos:
     rev: v1.37.1
     hooks:
       - id: yamllint
-  - repo: https://github.com/domluna/JuliaFormatter.jl
-    rev: v1.0.62
-    hooks:
-      - id: julia-formatter
