@@ -56,9 +56,11 @@ using Test
 
     make_move!(b, en_passant_move)
     # Check that the black pawn on d5 is removed
-    @test !OrbisChessEngine.testbit(b.bitboards[Piece.B_PAWN], OrbisChessEngine.square_index(4, 5))
+    @test !OrbisChessEngine.testbit(
+        b.bitboards[Piece.B_PAWN], OrbisChessEngine.square_index(4, 5))
     # Check that white pawn is now on d6
-    @test OrbisChessEngine.testbit(b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(4, 6))
+    @test OrbisChessEngine.testbit(
+        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(4, 6))
 
     # -----------------------------
     # Test promotion generation

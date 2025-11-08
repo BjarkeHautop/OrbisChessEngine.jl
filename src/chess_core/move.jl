@@ -32,7 +32,7 @@ end
 file_char(file) = Char('a' + file - 1)
 rank_char(rank) = string(rank)
 
-square_name(sq) = string(file_char(sq % 8 + 1), rank_char(div(sq, 8)+1))
+square_name(sq) = string(file_char(sq % 8 + 1), rank_char(div(sq, 8) + 1))
 # square_name(0) => "a1", square_name(63) => "h8"
 
 function square_from_name(s::AbstractString)

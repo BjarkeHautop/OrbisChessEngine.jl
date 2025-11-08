@@ -35,7 +35,7 @@ function load_polyglot_book(path::String)
     n = div(length(bytes), 16)
     entries = Vector{PolyglotEntry}(undef, n)
     for i in 1:n
-        offset = (i-1)*16 + 1
+        offset = (i - 1) * 16 + 1
         key = ntoh(reinterpret(UInt64, bytes[offset:(offset + 7)])[1])
         move = ntoh(reinterpret(UInt16, bytes[(offset + 8):(offset + 9)])[1])
         weight = ntoh(reinterpret(UInt16, bytes[(offset + 10):(offset + 11)])[1])
@@ -227,4 +227,5 @@ function decode_polyglot_move(code::UInt16, board::Board)
         en_passant = enp)
 end
 
-const KOMODO_OPENING_BOOK = load_polyglot_book(joinpath(@__DIR__, "..", "assets", "komodo.bin"))
+const KOMODO_OPENING_BOOK = load_polyglot_book(joinpath(
+    @__DIR__, "..", "assets", "komodo.bin"))

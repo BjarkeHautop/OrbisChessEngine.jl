@@ -44,9 +44,8 @@ function plot_board(board::Board)
     light, dark = RGB(0.93, 0.81, 0.65), RGB(0.62, 0.44, 0.27)
 
     for rank in 1:8, file in 1:8
-
         color = isodd(rank + file) ? dark : light
-        poly!(ax, Rect(file-1, rank-1, 1, 1); color = color)
+        poly!(ax, Rect(file - 1, rank - 1, 1, 1); color = color)
     end
 
     for (ptype, bb) in enumerate(board.bitboards)
@@ -54,7 +53,7 @@ function plot_board(board::Board)
             if testbit(bb, sq)
                 file = (sq % 8) + 1
                 rank = (sq ÷ 8) + 1
-                image!(ax, (file-1, file), (rank-1, rank), PIECE_PIXELS[ptype])
+                image!(ax, (file - 1, file), (rank - 1, rank), PIECE_PIXELS[ptype])
             end
         end
     end
@@ -111,7 +110,7 @@ b = Board() # prints the initial chess position
 function Base.show(io::IO, board::Board)
     for rank in 7:-1:0
         for file in 0:7
-            sq = rank*8 + file
+            sq = rank * 8 + file
             piece_char = '.'
             for (ptype, bb) in enumerate(board.bitboards)
                 if testbit(bb, sq)

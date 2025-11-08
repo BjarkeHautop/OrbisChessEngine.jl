@@ -35,7 +35,7 @@ function generate_king_moves!(board::Board, moves, start_idx::Int = 1)
         enemy_mask = board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
                      board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
                      board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
-        enemy_range = Piece.B_PAWN:Piece.B_KING
+        enemy_range = (Piece.B_PAWN):(Piece.B_KING)
         rights = board.castling_rights
         king_sq = trailing_zeros(kings)
     else
@@ -46,7 +46,7 @@ function generate_king_moves!(board::Board, moves, start_idx::Int = 1)
         enemy_mask = board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
                      board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
                      board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING]
-        enemy_range = Piece.W_PAWN:Piece.W_KING
+        enemy_range = (Piece.W_PAWN):(Piece.W_KING)
         rights = board.castling_rights
         king_sq = trailing_zeros(kings)
     end

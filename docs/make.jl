@@ -1,7 +1,8 @@
 using OrbisChessEngine
 using Documenter
 
-DocMeta.setdocmeta!(OrbisChessEngine, :DocTestSetup, :(using OrbisChessEngine); recursive = true)
+DocMeta.setdocmeta!(
+    OrbisChessEngine, :DocTestSetup, :(using OrbisChessEngine); recursive = true)
 
 const numbered_pages = [file
                         for file in readdir(joinpath(@__DIR__, "src"))

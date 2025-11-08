@@ -49,7 +49,7 @@ function occupancy_variations(mask)
     bits = [i for i in 0:63 if testbit(mask, i)]   # actual square indices 0..63
     n = length(bits)
     variations = UInt64[]
-    for i in 0:(2 ^ n - 1)
+    for i in 0:(2^n - 1)
         occ = UInt64(0)
         for j in 1:n
             if i & (1 << (j - 1)) != 0
@@ -192,11 +192,11 @@ function generate_sliding_moves_magic!(
 
     # Determine friendly/enemy pieces
     if board.side_to_move == WHITE
-        friendly_pieces = Piece.W_PAWN:Piece.W_KING
-        enemy_pieces = Piece.B_PAWN:Piece.B_KING
+        friendly_pieces = (Piece.W_PAWN):(Piece.W_KING)
+        enemy_pieces = (Piece.B_PAWN):(Piece.B_KING)
     else
-        friendly_pieces = Piece.B_PAWN:Piece.B_KING
-        enemy_pieces = Piece.W_PAWN:Piece.W_KING
+        friendly_pieces = (Piece.B_PAWN):(Piece.B_KING)
+        enemy_pieces = (Piece.W_PAWN):(Piece.W_KING)
     end
 
     # Compute occupancy bitboards

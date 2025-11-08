@@ -103,7 +103,7 @@ flip_index(idx) = begin
 end
 
 # Convert 0-based square (a1=0..h8=63) to PSQT index (1-based, A8=1..H1=64)
-psqt_index(square) = 8*(7 - div(square, 8)) + mod(square, 8) + 1
+psqt_index(square) = 8 * (7 - div(square, 8)) + mod(square, 8) + 1
 
 """
 Flip a piece-square table vertically (white → black perspective).

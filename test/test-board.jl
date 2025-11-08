@@ -22,7 +22,8 @@ using Test
     @test b.bitboards[Piece.B_ROOK] == expected_black_rooks
 
     # Move e2 to e4
-    m_square_index = Move(OrbisChessEngine.square_index(5, 2), OrbisChessEngine.square_index(5, 4))
+    m_square_index = Move(
+        OrbisChessEngine.square_index(5, 2), OrbisChessEngine.square_index(5, 4))
     m_chess_notation = Move("e2", "e4")
     @test m_square_index == m_chess_notation
 end

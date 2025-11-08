@@ -28,7 +28,7 @@ const Piece = (
 )
 
 # Convenience: all piece types as a range
-const ALL_PIECES = Piece.W_PAWN:Piece.B_KING
+const ALL_PIECES = (Piece.W_PAWN):(Piece.B_KING)
 
 const NUM_PIECES = length(ALL_PIECES)
 
@@ -108,7 +108,7 @@ function Base.:(==)(a::Board, b::Board)
         return false
     end
 
-    for i in 1:a.undo_index
+    for i in 1:(a.undo_index)
         if a.undo_stack[i] != b.undo_stack[i]
             return false
         end
@@ -126,3 +126,4 @@ function position_equal(a::Board, b::Board)
         a.eval_score == b.eval_score &&
         a.game_phase_value == b.game_phase_value
 end
+1 + 1

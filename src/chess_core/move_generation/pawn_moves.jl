@@ -94,7 +94,7 @@ function generate_pawn_moves!(board::Board, moves, start_idx::Int)
 
             # double push
             if (UInt64(1) << sq) & start_rank_mask != 0
-                to_sq2 = sq + 2*direction
+                to_sq2 = sq + 2 * direction
                 if 0 <= to_sq2 < 64 && (all_occupied & (UInt64(1) << to_sq2)) == 0
                     moves[idx] = Move(sq, to_sq2)
                     idx += 1

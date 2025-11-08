@@ -100,7 +100,7 @@ function perft_fast(board::Board, depth::Int)
                 move = root_moves[i]
                 make_move!(local_board, move)
                 nodes += _perft!(
-                    local_board, depth-1, local_moves_stack, local_pseudo_stack, 2)
+                    local_board, depth - 1, local_moves_stack, local_pseudo_stack, 2)
                 undo_move!(local_board, move)
             end
             return nodes

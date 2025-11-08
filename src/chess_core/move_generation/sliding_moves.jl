@@ -1,6 +1,6 @@
 # Internal helper for sliding moves
-const WHITE_PIECES = Piece.W_PAWN:Piece.W_KING
-const BLACK_PIECES = Piece.B_PAWN:Piece.B_KING
+const WHITE_PIECES = (Piece.W_PAWN):(Piece.W_KING)
+const BLACK_PIECES = (Piece.B_PAWN):(Piece.B_KING)
 const DIAGONAL_DIRS = [-9, -7, 7, 9]
 const ORTHOGONAL_DIRS = [-8, -1, 1, 8]
 const ALL_DIRS = [-9, -8, -7, -1, 1, 7, 8, 9]

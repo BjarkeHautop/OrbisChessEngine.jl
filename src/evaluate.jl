@@ -18,8 +18,8 @@ const PIECE_VALUES = Dict(
 function phase_weight(p)
     (p == Piece.W_QUEEN || p == Piece.B_QUEEN) ? 4 :
     (p == Piece.W_ROOK || p == Piece.B_ROOK) ? 2 :
-    (p == Piece.W_BISHOP||p == Piece.B_BISHOP ||
-     p == Piece.W_KNIGHT||p == Piece.B_KNIGHT) ? 1 : 0
+    (p == Piece.W_BISHOP || p == Piece.B_BISHOP ||
+     p == Piece.W_KNIGHT || p == Piece.B_KNIGHT) ? 1 : 0
 end
 
 """

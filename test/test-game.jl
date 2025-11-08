@@ -5,8 +5,8 @@ using Test
     game = Game(minutes = 0.5, increment = 2)
 
     @test isa(game, Game)
-    @test game.white_time == 0.5*60*1000
-    @test game.black_time == 0.5*60*1000
+    @test game.white_time == 0.5 * 60 * 1000
+    @test game.black_time == 0.5 * 60 * 1000
     @test game.increment == 2000
 
     opt_time, max_time = OrbisChessEngine.allocate_time(game)

@@ -33,7 +33,8 @@ function undo_move!(board::Board, m::Move)
     # --- 4. Restore captured piece ---
     if u.is_en_passant
         captured_square = board.side_to_move == WHITE ? m.to - 8 : m.to + 8
-        board.bitboards[u.captured_piece] = setbit(board.bitboards[u.captured_piece], captured_square)
+        board.bitboards[u.captured_piece] = setbit(
+            board.bitboards[u.captured_piece], captured_square)
     elseif u.captured_piece != 0
         board.bitboards[u.captured_piece] = setbit(board.bitboards[u.captured_piece], m.to)
     end

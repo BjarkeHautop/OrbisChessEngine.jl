@@ -18,7 +18,6 @@ function init_zobrist!()
 
     # Pieces 12 × 64
     for p in 1:12, sq in 1:64
-
         ZOBRIST_PIECES[p, sq] = rand(rng, UInt64)
     end
 

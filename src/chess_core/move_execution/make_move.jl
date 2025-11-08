@@ -8,14 +8,14 @@ function make_move!(board::Board, m::Move)
     # --- Identify moving piece ---
     piece_type = 0
     if board.side_to_move == WHITE
-        for p in Piece.W_PAWN:Piece.W_KING
+        for p in (Piece.W_PAWN):(Piece.W_KING)
             if testbit(board.bitboards[p], m.from)
                 piece_type = p
                 break
             end
         end
     else
-        for p in Piece.B_PAWN:Piece.B_KING
+        for p in (Piece.B_PAWN):(Piece.B_KING)
             if testbit(board.bitboards[p], m.from)
                 piece_type = p
                 break
@@ -64,17 +64,21 @@ function make_move!(board::Board, m::Move)
     elseif is_ep
         if board.side_to_move == WHITE
             captured_sq = m.to - 8
-            board.bitboards[Piece.B_PAWN] = clearbit(board.bitboards[Piece.B_PAWN], captured_sq)
+            board.bitboards[Piece.B_PAWN] = clearbit(
+                board.bitboards[Piece.B_PAWN], captured_sq)
             h ⊻= ZOBRIST_PIECES[Piece.B_PAWN, captured_sq + 1]
 
-            board.eval_score -= piece_square_value(Piece.B_PAWN, captured_sq, board.game_phase_value)
+            board.eval_score -= piece_square_value(
+                Piece.B_PAWN, captured_sq, board.game_phase_value)
             board.game_phase_value -= phase_weight(Piece.B_PAWN)
         else
             captured_sq = m.to + 8
-            board.bitboards[Piece.W_PAWN] = clearbit(board.bitboards[Piece.W_PAWN], captured_sq)
+            board.bitboards[Piece.W_PAWN] = clearbit(
+                board.bitboards[Piece.W_PAWN], captured_sq)
             h ⊻= ZOBRIST_PIECES[Piece.W_PAWN, captured_sq + 1]
 
-            board.eval_score -= piece_square_value(Piece.W_PAWN, captured_sq, board.game_phase_value)
+            board.eval_score -= piece_square_value(
+                Piece.W_PAWN, captured_sq, board.game_phase_value)
             board.game_phase_value -= phase_weight(Piece.W_PAWN)
         end
     end

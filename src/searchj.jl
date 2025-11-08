@@ -484,7 +484,8 @@ function search_root(board::Board, max_depth::Int;
         end
     end
 
-    return SearchResult(best_result_internal.score, best_result_internal.move, best_result_internal.from_book)
+    return SearchResult(best_result_internal.score, best_result_internal.move,
+        best_result_internal.from_book)
 end
 
 """
