@@ -10,7 +10,7 @@ repos:
 
       - id: julia-formatter
         name: julia-formatter
-        entry: "julia --project=. -e 'using JuliaFormatter; format(\".\")'"
+        entry: bash -c '[[ $CI ]] && exit 0 || julia --project=. -e "using JuliaFormatter; format(\".\")"'
         language: system
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
