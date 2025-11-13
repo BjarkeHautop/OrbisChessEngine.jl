@@ -44,6 +44,7 @@ function plot_board(board::Board)
     light, dark = RGB(0.93, 0.81, 0.65), RGB(0.62, 0.44, 0.27)
 
     for rank in 1:8, file in 1:8
+
         color = isodd(rank + file) ? dark : light
         poly!(ax, Rect(file - 1, rank - 1, 1, 1); color = color)
     end

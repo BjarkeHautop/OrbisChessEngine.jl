@@ -23,6 +23,15 @@ Particularly, *OrbisChessEngine* implements:
 - Minimax search with alpha–beta pruning, iterative deepening, quiescence search, transposition tables, null move pruning, and move ordering heuristics
 - Evaluation function based on piece-square tables
 
+## Installation
+
+`OrbisChessEngine` can be installed directly from the Julia package manager.
+In the Julia REPL, press `]` to enter the Pkg mode, then run:
+
+```julia
+pkg> add OrbisChessEngine
+```
+
 ## Resources
 
 View the documentation at [https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/](https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/).

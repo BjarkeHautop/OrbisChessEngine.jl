@@ -135,7 +135,8 @@ function has_legal_move(board::Board)::Bool
 
     gens = in_check_now ? GEN_CHECKS_IN_CHECK : GEN_CHECKS_NORMAL
     @inbounds for gen_func in gens
-        ok, pseudo_len = check_piece_moves!(
+        ok,
+        pseudo_len = check_piece_moves!(
             board, pseudo, pseudo_len, gen_func, side, king_sq, occ, in_check_now)
         ok && return true
     end

@@ -2,7 +2,12 @@
 
 ## Installation
 
-The OrbisChessEngine package is available through the Julia package system by running Pkg.add("OrbisChessEngine"). Throughout, we assume that you have installed the package.
+`OrbisChessEngine` can be installed directly from the Julia package manager.
+In the Julia REPL, press `]` to enter the Pkg mode, then run:
+
+```julia
+pkg> add OrbisChessEngine
+```
 
 ## Playing Chess
 

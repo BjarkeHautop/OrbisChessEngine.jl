@@ -126,7 +126,7 @@ function Move(board::Board, str::AbstractString)
     # --- Infer moving piece ---
     moving_piece = 0
     for p in (board.side_to_move == WHITE ? ((Piece.W_PAWN):(Piece.W_KING)) :
-              ((Piece.B_PAWN):(Piece.B_KING)))
+         ((Piece.B_PAWN):(Piece.B_KING)))
         if testbit(board.bitboards[p], from)
             moving_piece = p
             break

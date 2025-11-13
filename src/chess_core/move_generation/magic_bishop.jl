@@ -49,7 +49,7 @@ function occupancy_variations(mask)
     bits = [i for i in 0:63 if testbit(mask, i)]   # actual square indices 0..63
     n = length(bits)
     variations = UInt64[]
-    for i in 0:(2^n - 1)
+    for i in 0:(2 ^ n - 1)
         occ = UInt64(0)
         for j in 1:n
             if i & (1 << (j - 1)) != 0
