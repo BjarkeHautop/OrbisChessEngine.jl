@@ -1,6 +1,6 @@
 name = "OrbisChessEngine"
 uuid = "2eacc985-a635-41e1-b67f-45fa7ceb5b4d"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Bjarke Hautop <bjarke.hautop@gmail.com> and contributors"]
 
 [deps]
@@ -22,7 +22,7 @@ Images = "0.26.2"
 Random = "1.6"
 StaticArrays = "1.9.15"
 Test = "1"
-julia = "1.6"
+julia = "1.10"
 
 [extras]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
