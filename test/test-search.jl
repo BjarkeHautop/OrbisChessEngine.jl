@@ -41,6 +41,20 @@ end
     @test true  # Just ensure it completes without error
 end
 
+@testset "Search works in stalemate position" begin
+    b = Board(fen = "4k3/4P3/4K3/8/8/8/8/8 b - - 0 1")
+    output = search(b; depth = 1, opening_book = nothing, verbose = true)
+
+    @test isnothing(output)
+end
+
+@testset "Search works in mate position" begin
+    b = Board(fen = "4k3/3PP3/4K3/8/8/8/8/8 b - - 0 1")
+    output = search(b; depth = 1, opening_book = nothing, verbose = true)
+
+    @test isnothing(output)
+end
+
 @testset "Transposition Table Tests" begin
     OrbisChessEngine.tt_clear!()  # ensure empty TT before tests
 

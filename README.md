@@ -32,6 +32,24 @@ In the Julia REPL, press `]` to enter the Pkg mode, then run:
 pkg> add OrbisChessEngine
 ```
 
+## Example
+
+Here we show an example of how to let the engine play a "1+1" game against itself and plot it afterwards to view it.
+
+```julia
+game = Game("1+1")
+plots = []
+while game_status(game.board) == :ongoing
+    make_timed_move!(game)
+    push!(plots, display(game))
+end
+
+for i in eachindex(plots)
+    sleep(0.5)
+    display(plots[i])
+end
+```
+
 ## Resources
 
 View the documentation at [https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/](https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/).
