@@ -65,7 +65,7 @@ function search_with_time(
 end
 
 """
-    make_timed_move!(game::Game; opening_book::Union{Nothing, PolyglotBook}=KOMODO_OPENING_BOOK, verbose=false)
+    engine_move!(game::Game; opening_book::Union{Nothing, PolyglotBook}=KOMODO_OPENING_BOOK, verbose=false)
 
 Searches for and makes a move for the current player, updating the Game struct with the updated board and time remaining.
 - `game`: Game struct
@@ -75,7 +75,7 @@ Searches for and makes a move for the current player, updating the Game struct w
 The time allocated for the search is done automatically based on remaining time and increment.
 See [`search`](@ref) for details on how the search is performed.
 """
-function make_timed_move!(
+function engine_move!(
         game::Game;
         opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
         verbose = false
@@ -113,7 +113,7 @@ end
 
 # Non-mutating version
 """
-    make_timed_move(game::Game; opening_book::Union{Nothing, PolyglotBook}=KOMODO_OPENING_BOOK, verbose=false) -> Game
+    engine_move(game::Game; opening_book::Union{Nothing, PolyglotBook}=KOMODO_OPENING_BOOK, verbose=false) -> Game
 
 Searches for and makes a move for the current player, returning a new Game struct with the updated board and time remaining.
 - `game`: Game struct
@@ -123,13 +123,13 @@ Searches for and makes a move for the current player, returning a new Game struc
 The time allocated for the search is done automatically based on remaining time and increment.
 See [`search`](@ref) for details on how the search is performed.
 """
-function make_timed_move(
+function engine_move(
         game::Game;
         opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
         verbose = false
 )
     game_copy = deepcopy(game)
-    make_timed_move!(game_copy; opening_book = opening_book, verbose = verbose)
+    engine_move!(game_copy; opening_book = opening_book, verbose = verbose)
     return game_copy
 end
 

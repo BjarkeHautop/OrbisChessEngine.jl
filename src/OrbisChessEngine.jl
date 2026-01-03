@@ -45,7 +45,7 @@ export Piece, WHITE, BLACK
 
 # Move generation & game state
 export generate_legal_moves, generate_legal_moves!
-export make_move!, make_move, undo_move!, undo_move, make_timed_move!, make_timed_move
+export make_move!, make_move, undo_move!, undo_move, engine_move!, engine_move
 export in_check, game_status
 
 # Evaluation & search

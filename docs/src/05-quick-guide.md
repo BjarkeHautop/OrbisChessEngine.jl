@@ -94,10 +94,10 @@ game = Game("3+2")
 
 This is a struct of type `Game` which contains the board, white and black time left, and the increment.
 
-The engine will then automatically allocate how much time to use for each move. To let the engine make a move in a timed game we can use `make_timed_move!`:
+The engine will then automatically allocate how much time to use for each move. To let the engine make a move in a timed game we can use `engine_move!`:
 
 ```julia
-make_timed_move!(game)
+engine_move!(game)
 ```
 
 Combining everything we can let the engine play against itself in a 1+1 game:
@@ -106,7 +106,7 @@ Combining everything we can let the engine play against itself in a 1+1 game:
 game = Game("1+1")
 plots = []
 while game_status(game.board) == :ongoing
-    make_timed_move!(game)
+    engine_move!(game)
     push!(plots, display(game))
 end
 ```
