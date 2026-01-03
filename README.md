@@ -40,7 +40,7 @@ Here we show an example of how to let the engine play a "1+1" game against itsel
 game = Game("1+1")
 plots = []
 while game_status(game.board) == :ongoing
-    make_timed_move!(game)
+    engine_move!(game)
     push!(plots, display(game))
 end
 

@@ -1,6 +1,6 @@
 name = "OrbisChessEngine"
 uuid = "2eacc985-a635-41e1-b67f-45fa7ceb5b4d"
-version = "0.2.2"
+version = "0.3.0-dev"
 authors = ["Bjarke Hautop <bjarke.hautop@gmail.com> and contributors"]
 
 [deps]

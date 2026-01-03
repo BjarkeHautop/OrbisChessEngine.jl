@@ -1,8 +1,19 @@
 """
-    make_move!(board, m)
-Apply move `m` to board, modifying it in place.
-- `board`: Board struct
-- `m`: Move
+    make_move!(board::Board, m::Move)
+
+Apply the move `m` to `board` **in-place**, updating the board state, castling rights, en passant square,
+halfmove clock, and internal evaluation.
+
+- `board`: a `Board` struct representing the current chess position.
+- `m`: a `Move` object. Typically created from a long algebraic notation (LAN) string using `Move(board, "e2e4")`.
+
+# Example
+
+```julia
+board = Board()
+mv = Move(board, "e2e4")
+make_move!(board, mv)
+```
 """
 function make_move!(board::Board, m::Move)
     # --- Identify moving piece ---
@@ -220,14 +231,76 @@ function make_move!(board::Board, m::Move)
 end
 
 """
-    make_move(board, m) -> Board
+    make_move(board::Board, m::Move)
 
-Return a new board with move `m` applied, leaving the original board unchanged.
-- `board`: Board struct
-- `m`: Move
+Return a **new board** with the move `m` applied, leaving the original `board` unchanged.
+Updates castling rights, en passant square, halfmove clock, and internal evaluation.
+
+- `board`: a `Board` struct representing the current chess position.
+- `m`: a `Move` object. Typically created from a long algebraic notation (LAN) string using `Move(board, "e2e4")`.
+
+# Example
+
+```julia
+board = Board()
+mv = Move(board, "e2e4")
+new_board = make_move(board, mv)
+```
 """
 function make_move(board::Board, m::Move)
     new_board = deepcopy(board)
     make_move!(new_board, m)
+    return new_board
+end
+
+"""
+    apply_moves!(board::Board, moves::AbstractString...)
+
+Apply a sequence of moves in **long algebraic notation (LAN)** to `board` **in-place**.
+Only legal moves are allowed; an error is thrown if any move is illegal.
+
+Since this function modifies `board` in-place, all moves **up to the first illegal move** are applied.
+The board will reflect these moves even if a subsequent move is illegal.
+
+- `board`: a `Board` struct representing the current chess position.
+- `moves`: one or more moves as LAN strings (e.g., `"e2e4"`, `"g1f3"`).
+
+# Example
+
+```julia
+board = Board()
+apply_moves!(board, "e2e4", "e7e5", "g1f3", "b8c6", "f1b5")
+```
+"""
+function apply_moves!(board::Board, moves::AbstractString...)
+    for (i, mstr) in enumerate(moves)
+        legal = generate_legal_moves(board)
+        idx = findfirst(m -> string(m) == mstr, legal)
+        idx === nothing && error("Illegal move '$mstr' at move $i")
+        mv = legal[idx]
+        make_move!(board, mv)
+    end
+    return board
+end
+
+"""
+    apply_moves(board::Board, moves::AbstractString...) -> Board
+
+Return a **new board** with a sequence of moves in **long algebraic notation (LAN)** applied.
+The original `board` is left unchanged. Only legal moves are allowed; an error is thrown if any move is illegal.
+
+- `board`: a `Board` struct representing the current chess position.
+- `moves`: one or more moves as LAN strings (e.g., `"e2e4"`, `"g1f3"`).
+
+# Example
+
+```julia
+board = Board()  # starting position
+new_board = apply_moves(board, "e2e4", "e7e5", "g1f3", "b8c6", "f1b5")
+```
+"""
+function apply_moves(board::Board, moves::AbstractString...)
+    new_board = deepcopy(board)
+    apply_moves!(new_board, moves...)
     return new_board
 end

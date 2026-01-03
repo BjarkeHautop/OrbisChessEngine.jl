@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## Unreleased
+
+### Breaking Changes
+
+- Renamed `make_timed_move!` function to `engine_move!`.
+
+### New features
+
+- Added `apply_moves` and `apply_moves!` functions to make several moves in a row (user QOL change).
+
 ## [0.2.1] - 2025-11-15
 
 ### Changes
