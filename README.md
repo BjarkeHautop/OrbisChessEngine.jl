@@ -9,7 +9,7 @@
 [![BestieTemplate](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/JuliaBesties/BestieTemplate.jl/main/docs/src/assets/badge.json)](https://github.com/JuliaBesties/BestieTemplate.jl)
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/BjarkeHautop/OrbisChessEngine.jl/main/assets/logo.png" alt="Orbis Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/BjarkeHautop/OrbisChessEngine.jl/main/assets/logo.jpg" alt="Orbis Logo" width="200"/>
 </p>
 
 A Julia package that implements chess from scratch alongside a chess engine, **Orbis**. It provides functionalities to represent the chessboard, validate moves, and evaluate positions.
