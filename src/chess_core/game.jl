@@ -76,13 +76,15 @@ The time allocated for the search is done automatically based on remaining time 
 See [`search`](@ref) for details on how the search is performed.
 
 # Example
+```julia
 game = Game()
 
-# Make a move using the KOMODO OPENING BOOK
+# Make a move using the Komodo opening book
 engine_move!(game, opening_book = KOMODO_OPENING_BOOK)
 
 # Make a move without the opening book
 engine_move!(game, opening_book = nothing)
+```
 """
 function engine_move!(
         game::Game;
@@ -131,6 +133,17 @@ Searches for and makes a move for the current player, returning a new Game struc
 
 The time allocated for the search is done automatically based on remaining time and increment.
 See [`search`](@ref) for details on how the search is performed.
+
+# Example
+```julia
+game1 = Game()
+
+# Make a move using the Komodo opening book
+game2 = engine_move(game, opening_book = KOMODO_OPENING_BOOK)
+
+# Make a move without the opening book
+game3 = engine_move(game, opening_book = nothing)
+```
 """
 function engine_move(
         game::Game;
@@ -238,6 +251,12 @@ Returns: Symbol — one of
   - `:timeout_white`
   - `:timeout_black`
   - `:ongoing`
+
+# Example
+```julia
+board = Board()
+game_status(board)
+```
 """
 function game_status(board::Board)
     if !has_legal_move(board)
@@ -275,6 +294,11 @@ Returns: Symbol — one of
   - `:timeout_white`
   - `:timeout_black`
   - `:ongoing`
+# Example
+```julia
+game = Game()
+game_status(game)
+```
 """
 function game_status(game::Game)
     status = game_status(game.board)

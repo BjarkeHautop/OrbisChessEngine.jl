@@ -9,6 +9,12 @@ Compute the number of leaf nodes reachable from the given board position at the 
 It uses the Board struct to immitate [search](@ref) behavior. In particular,
 this means it still computes zobrist hashes and updates evaluation scores
 slowing it down compared to a minimal perft implementation.
+
+# Example
+```julia
+board = Board()
+perft(board, 5)
+```
 """
 function perft(board::Board, depth::Int)
     moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
@@ -71,6 +77,12 @@ using multiple threads at the root.
 It uses the Board struct to immitate [search](@ref) behavior. In particular,
 this means it still computes zobrist hashes and updates evaluation scores
 slowing it down compared to a minimal perft implementation.
+
+# Example
+```julia
+board = Board()
+perft_fast(board, 5)
+```
 """
 function perft_fast(board::Board, depth::Int)
     if depth == 0

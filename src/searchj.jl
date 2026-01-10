@@ -514,6 +514,12 @@ Set to `nothing` to disable. See [`load_polyglot_book`](@ref) to load custom boo
 - `time_budget`: time in milliseconds to stop the search (if depth not reached)
 Returns:
 - `SearchResult` containing the best move and its evaluation score (or `nothing` if no move found)
+
+# Example
+```julia
+board = Board()
+search(board; depth=5, opening_book=nothing, verbose=true, time_budget=5000)
+```
 """
 function search(
         board::Board;

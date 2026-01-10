@@ -1,7 +1,38 @@
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
+"""
+    Board(; fen::String = START_FEN)
+
+Construct a chess `Board` object from a FEN string.
+
+- `fen::String`: The Forsyth-Edwards Notation string representing the board position.
+  Defaults to `START_FEN` (the standard starting position).
+
+# Example
+```julia
+b1 = Board()
+# Only a white king on E1 and a black king on E8 with white to move
+b2 = Board(fen = "4k3/8/8/8/8/8/8/4K3 w - - 0 1")
+```
+"""
 Board(; fen::String = START_FEN) = board_from_fen(fen)
 
+"""
+    Game(; minutes=3, increment=2, fen::String = START_FEN)
+
+Create a Game object with a specified time control and optional starting position.
+
+- `minutes`: Initial time in minutes for both players (default: 3).
+- `increment`: Increment in seconds per move (default: 2).
+- `fen::String`: Optional FEN string to start the game (default: START_FEN).
+
+# Example
+```julia
+g1 = Game()                        # 3+2 game from starting position
+g2 = Game(minutes=5, increment=0) # 5-minute blitz game with no increment
+g3 = Game(fen="8/8/8/8/8/8/8/K6k w - - 0 1")  # starting from custom FEN
+```
+"""
 function Game(; minutes = 3, increment = 2, fen::String = START_FEN)
     Game(Board(fen = fen),
         minutes * 60 * 1000,
@@ -9,6 +40,21 @@ function Game(; minutes = 3, increment = 2, fen::String = START_FEN)
         increment * 1000)
 end
 
+"""
+    Game(tc::AbstractString; fen::String = START_FEN)
+
+Create a Game object with a specified time control and optional starting position.
+
+- `tc::AbstractString`: Time control string, e.g., `"5+3"` (5 minutes + 3 seconds increment).
+- `fen::String`: Optional FEN string to start the game (default: START_FEN).
+
+# Example
+```julia
+g1 = Game("3+2")    # 3 minutes + 2 seconds increment
+g2 = Game("10+0")  # 10 minutes, no increment
+g3 = Game("5+5", fen="8/8/8/8/8/8/8/K6k w - - 0 1")  # custom starting position
+```
+"""
 function Game(tc::AbstractString; fen::String = START_FEN)
     m, inc = split(tc, "+")
     Game(minutes = parse(Int, m), increment = parse(Int, inc), fen = fen)

@@ -4,6 +4,21 @@
 Undo move `m` on `board` in place, restoring previous state.
 - `board`: Board struct
 - `m`: Move struct
+
+# Example
+```jldoctest; output = false
+board = Board()
+copy_board = deepcopy(board)
+
+mv = Move(board, "e2e4")
+make_move!(board, mv)
+undo_move!(board, mv)
+board == copy_board
+
+# output
+
+true
+```
 """
 function undo_move!(board::Board, m::Move)
     if board.undo_index == 0
@@ -76,6 +91,20 @@ end
 Return a new board with move `m` undone, leaving the original board unchanged.
 - `board`: Board struct
 - `m`: Move struct
+
+# Example
+```jldoctest; output = false
+board = Board()
+mv = Move(board, "e2e4")
+
+new_board = make_move(board, mv)
+original_board = undo_move(new_board, mv)
+board == original_board
+
+# output
+
+true
+```
 """
 function undo_move(board::Board, m::Move)
     board_copy = deepcopy(board)

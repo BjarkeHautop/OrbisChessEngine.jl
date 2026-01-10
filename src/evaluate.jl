@@ -27,6 +27,12 @@ end
 
 Evaluate a position from White’s perspective using piece-square tables.
 - board: Board struct
+
+# Example
+```julia
+board = Board()
+evaluate(board)
+````
 """
 function evaluate(board::Board)
     # --- Check for terminal game states ---
