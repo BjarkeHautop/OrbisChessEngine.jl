@@ -288,21 +288,24 @@ function _search(
         return SearchResult(quiescence(board, α, β), NO_MOVE, false)
     end
 
-    # Null move pruning (only if not in check and not endgame)
-    if depth > NULL_MOVE_REDUCTION + 1 && !is_endgame(board) &&
-       !in_check(board, board.side_to_move)
-        make_null_move!(board)
-        result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, -β, -β + 1,
-            nothing, stop_time,
-            moves_stack, pseudo_stack, score_stack)
-        undo_null_move!(board)
+    side_to_move = board.side_to_move
 
-        if board.side_to_move == WHITE && result.score >= β
-            return SearchResult(result.score, NO_MOVE, false)
-        elseif board.side_to_move == BLACK && result.score <= α
-            return SearchResult(result.score, NO_MOVE, false)
-        end
-    end
+    # Seems to be broken? Disabling for now...
+    # Null move pruning (only if endgame and not in check)
+    # if (depth > NULL_MOVE_REDUCTION + 1) && is_endgame(board) &&
+    #    !in_check(board, side_to_move)
+    #     make_null_move!(board)
+    #     result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, -β, -β + 1,
+    #         nothing, stop_time,
+    #         moves_stack, pseudo_stack, score_stack)
+    #     undo_null_move!(board)
+
+    #     if side_to_move == WHITE && result.score >= β
+    #         return SearchResult(result.score, NO_MOVE, false)
+    #     elseif side_to_move == BLACK && result.score <= α
+    #         return SearchResult(result.score, NO_MOVE, false)
+    #     end
+    # end
 
     moves = moves_stack[ply + 1]
     pseudo = pseudo_stack[ply + 1]
@@ -311,8 +314,8 @@ function _search(
     n_moves = generate_legal_moves!(board, moves, pseudo)
 
     if n_moves == 0
-        val = in_check(board, board.side_to_move) ?
-              (board.side_to_move == WHITE ? -MATE_VALUE + ply : MATE_VALUE - ply) : 0
+        val = in_check(board, side_to_move) ?
+              (side_to_move == WHITE ? -MATE_VALUE + ply : MATE_VALUE - ply) : 0
         return SearchResult(val, NO_MOVE, false)
     end
 
@@ -355,7 +358,7 @@ function _search(
         undo_move!(board, m)
 
         # Alpha-beta update
-        if board.side_to_move == WHITE
+        if side_to_move == WHITE
             if result.score > best_score
                 best_score = result.score
                 best_move = m
@@ -402,11 +405,12 @@ function tt_probe_raw(hash::UInt64)
 end
 
 "Reconstruct the principal variation (PV) from the transposition table"
-function extract_pv(board::Board, max_depth::Int)
-    pv = Move[]
+function extract_root_pv(board::Board, root_move::Move, max_depth::Int)
+    pv = Move[root_move]
     temp_board = deepcopy(board)
+    make_move!(temp_board, root_move)
 
-    for _ in 1:max_depth
+    for _ in 2:max_depth
         h = zobrist_hash(temp_board)
         val, move, hit = tt_probe_raw(h)
         if !hit || move === NO_MOVE
@@ -462,7 +466,7 @@ function search_root(board::Board, max_depth::Int;
         end
 
         if verbose
-            pv = extract_pv(board, depth)
+            pv = extract_root_pv(board, best_result_internal.move, depth)
             pv_str = join(string.(pv), " ")
             println("Depth $depth | Score: $(best_result_internal.score) | PV: $pv_str")
         end
