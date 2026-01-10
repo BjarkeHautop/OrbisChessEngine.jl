@@ -74,6 +74,15 @@ Searches for and makes a move for the current player, updating the Game struct w
 
 The time allocated for the search is done automatically based on remaining time and increment.
 See [`search`](@ref) for details on how the search is performed.
+
+# Example
+game = Game()
+
+# Make a move using the KOMODO OPENING BOOK
+engine_move!(game, opening_book = KOMODO_OPENING_BOOK)
+
+# Make a move without the opening book
+engine_move!(game, opening_book = nothing)
 """
 function engine_move!(
         game::Game;

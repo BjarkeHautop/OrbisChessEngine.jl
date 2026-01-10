@@ -79,6 +79,17 @@ Castling can be specified with "O-O" (kingside) or "O-O-O" (queenside).
 Also accepts "o-o", "0-0", "o-o-o", "0-0-0".
 
 Note, that this function does not validate the legality of the move; it only constructs the Move object.
+
+# Example
+
+```julia
+board = Board()
+mv = Move(board, "e2e4")
+make_move!(board, mv)
+
+# Illegal moves are also allowed
+mv = Move(board, "d7d4")
+make_move!(board, mv)
 """
 function Move(board::Board, str::AbstractString)
     # --- Handle castling shortcuts ---
