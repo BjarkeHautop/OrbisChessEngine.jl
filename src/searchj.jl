@@ -455,7 +455,6 @@ function search_root(board::Board, max_depth::Int;
         if (time_ns() ÷ 1_000_000) >= max_stop_time
             break
         end
-
         result = _search(board, depth, 0, -MATE_VALUE, MATE_VALUE,
             opening_book, max_stop_time,
             moves_stack, pseudo_stack, score_stack)
@@ -465,7 +464,7 @@ function search_root(board::Board, max_depth::Int;
             best_result_internal = result
         end
 
-        if verbose
+        if verbose && result.move !== NO_MOVE
             pv = extract_root_pv(board, best_result_internal.move, depth)
             pv_str = join(string.(pv), " ")
             println("Depth $depth | Score: $(best_result_internal.score) | PV: $pv_str")
@@ -534,7 +533,6 @@ function search(
     result = search_root(board, depth; opt_stop_time = stop_time,
         max_stop_time = stop_time, opening_book = opening_book,
         verbose = verbose)
-
     # Convert NO_MOVE to nothing for public API
     if result.move === NO_MOVE
         if verbose
