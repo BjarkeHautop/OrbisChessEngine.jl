@@ -37,16 +37,7 @@ To view the board we can use `plot()`:
 plot(board)
 ```
 
-If using a light theme editor, you might want to set your preferences to use light theme for the chess board:
-
-```julia
-using Preferences
-set_preferences!(
-    OrbisChessEngine,
-    "theme" => "light",
-    force = true
-)
-```
+If using a light theme editor, you might want to set your preferences to use light theme for the chess board.
 
 We can use `Move` to create a move. Several formats are supported, but the simplest is
 to use the long algebraic notation:
@@ -86,7 +77,7 @@ game_status(board)
 To generate a move using the engine we can use `search()`:
 
 ```julia
-result = search(board; depth=3, opening_book=nothing)
+result = search(board; depth = 3, opening_book = nothing)
 ```
 
 `search()` returns a `SearchResult` object containing the evaluation score, the move and if it is a book move. This package ships with a small opening book, which is default when calling `search()`. To disable the opening book, set `opening_book = nothing`. To use a custom opening book use [`load_polyglot_book()`](@ref) to load another polyglot book in `.bin` format.
