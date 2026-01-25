@@ -37,6 +37,17 @@ To view the board we can use `plot()`:
 plot(board)
 ```
 
+If using a light theme editor, you might want to set your preferences to use light theme for the chess board:
+
+```julia
+using Preferences
+set_preferences!(
+    OrbisChessEngine,
+    "theme" => "light",
+    force = true
+)
+```
+
 We can use `Move` to create a move. Several formats are supported, but the simplest is
 to use the long algebraic notation:
 

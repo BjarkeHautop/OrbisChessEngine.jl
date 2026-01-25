@@ -83,6 +83,9 @@ set_preferences!(
 )
 plot(board)
 ```
+
+If you have issues with the piece characters not displaying correctly,
+consider using another font. We recommend "DejaVu Sans Mono" available at https://dejavu-fonts.github.io/.
 """
 function plot(board::Board; board_orientation = :white, io::IO = stdout)
     light, dark, reset = chessboard_colors()
