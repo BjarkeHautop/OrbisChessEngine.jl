@@ -27,4 +27,4 @@ function run_tests(test_aqua::Bool)
     end
 end
 
-run_tests(false)
+run_tests(true)

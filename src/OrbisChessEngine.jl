@@ -60,6 +60,8 @@ export PolyglotBook, load_polyglot_book
 export book_move, polyglot_hash, KOMODO_OPENING_BOOK
 
 # ui
-export plot_board
+using Preferences
+
+export plot
 
 end

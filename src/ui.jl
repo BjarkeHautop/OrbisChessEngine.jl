@@ -1,76 +1,157 @@
-import FileIO: load
-import Images: rotr90
-import CairoMakie: Figure, Axis, poly!, image!, Rect, hidespines!, DataAspect, RGB
-
-# Path relative to this source file
-const ASSET_DIR = abspath(joinpath(@__DIR__, "..", "assets"))
-
-# Piece images used under CC BY-SA 3.0 license:
-# Original source: https://commons.wikimedia.org/wiki/Category:PNG_chess_pieces/Standard_transparent
-# License: https://creativecommons.org/licenses/by-sa/3.0/
-# Changes: none
-
-const PIECE_IMAGES = Dict(
-    Piece.W_PAWN => joinpath(ASSET_DIR, "w_pawn.png"),
-    Piece.W_KNIGHT => joinpath(ASSET_DIR, "w_knight.png"),
-    Piece.W_BISHOP => joinpath(ASSET_DIR, "w_bishop.png"),
-    Piece.W_ROOK => joinpath(ASSET_DIR, "w_rook.png"),
-    Piece.W_QUEEN => joinpath(ASSET_DIR, "w_queen.png"),
-    Piece.W_KING => joinpath(ASSET_DIR, "w_king.png"),
-    Piece.B_PAWN => joinpath(ASSET_DIR, "b_pawn.png"),
-    Piece.B_KNIGHT => joinpath(ASSET_DIR, "b_knight.png"),
-    Piece.B_BISHOP => joinpath(ASSET_DIR, "b_bishop.png"),
-    Piece.B_ROOK => joinpath(ASSET_DIR, "b_rook.png"),
-    Piece.B_QUEEN => joinpath(ASSET_DIR, "b_queen.png"),
-    Piece.B_KING => joinpath(ASSET_DIR, "b_king.png")
+using Preferences
+const DEFAULT_PREFS = (
+    theme = "dark", light = (
+        light_square_bg = "\e[48;5;230m",
+        dark_square_bg = "\e[48;5;110m"
+    ),
+    dark = (
+        light_square_bg = "\e[48;5;235m",
+        dark_square_bg = "\e[48;5;238m"
+    )
 )
 
-# (rotr90 to rotate images to match board orientation with rank 1 at bottom)
-const PIECE_PIXELS = Dict(k => rotr90(load(v)) for (k, v) in PIECE_IMAGES)
+function _get_pref(key::Symbol, default)
+    @load_preference(String(key), default)
+end
 
-"""
-    plot_board(board::Board) -> Makie.Figure
+function chessboard_colors()
+    theme = _get_pref(:theme, DEFAULT_PREFS.theme)
 
-Plot the chess board and pieces using Makie.jl
-- `board`: Board struct
-"""
-function plot_board(board::Board)
-    fig = Figure(size = (600, 600))
-    ax = Axis(fig[1, 1]; aspect = DataAspect())
+    @assert theme == "light" || theme == "dark" "Invalid theme: $theme"
 
-    ax.xticks = (collect(0.5:1:7.5), ["a", "b", "c", "d", "e", "f", "g", "h"])
-    ax.yticks = (collect(0.5:1:7.5), ["1", "2", "3", "4", "5", "6", "7", "8"])
+    defaults = theme == "dark" ? DEFAULT_PREFS.dark : DEFAULT_PREFS.light
 
-    light, dark = RGB(0.93, 0.81, 0.65), RGB(0.62, 0.44, 0.27)
+    light = _get_pref(
+        Symbol(theme * "_light_square_bg"),
+        defaults.light_square_bg
+    )
 
-    for rank in 1:8, file in 1:8
+    dark = _get_pref(
+        Symbol(theme * "_dark_square_bg"),
+        defaults.dark_square_bg
+    )
 
-        color = isodd(rank + file) ? dark : light
-        poly!(ax, Rect(file - 1, rank - 1, 1, 1); color = color)
+    return light, dark, "\e[0m"
+end
+
+const PIECE_IMAGES = Dict(
+    Piece.W_PAWN => '♟',
+    Piece.W_KNIGHT => '♞',
+    Piece.W_BISHOP => '♝',
+    Piece.W_ROOK => '♜',
+    Piece.W_QUEEN => '♛',
+    Piece.W_KING => '♚',
+    Piece.B_PAWN => '♙',
+    Piece.B_KNIGHT => '♘',
+    Piece.B_BISHOP => '♗',
+    Piece.B_ROOK => '♖',
+    Piece.B_QUEEN => '♕',
+    Piece.B_KING => '♔'
+)
+
+function piece_glyph(ptype::Int, theme::String)
+    p = ptype
+
+    if theme == "light"
+        # Hack: piece colors looks swapped on light theme
+        p = p ≤ 6 ? p + 6 : p - 6
     end
 
-    for (ptype, bb) in enumerate(board.bitboards)
-        for sq in 0:63
-            if testbit(bb, sq)
-                file = (sq % 8) + 1
-                rank = (sq ÷ 8) + 1
-                image!(ax, (file - 1, file), (rank - 1, rank), PIECE_PIXELS[ptype])
-            end
-        end
-    end
-
-    hidespines!(ax)
-    fig
+    return PIECE_IMAGES[p]
 end
 
 """
-    plot_board(game::Game) -> Makie.Figure
+    plot(board::Board; board_orientation = :white, io::IO = stdout)
+Display a colored chess board in the terminal using Unicode chess piece characters.
+- `board`: Board struct
+- `board_orientation`: `:white` (default) or `:black` to set the perspective
+- `io`: IO stream to print to (default: `stdout`)
 
-Plot the chess board and pieces using Makie.jl
-- `game`: Game struct
+# Example
+```julia
+board = Board()
+plot(board)
+
+# Change orientation
+plot(board; board_orientation = :black)
+
+# Change plot preference colors
+using Preferences
+set_preferences!(
+    OrbisChessEngine,
+    "theme" => "light",
+)
+plot(board)
+```
 """
-function plot_board(game::Game)
-    return plot_board(game.board)
+function plot(board::Board; board_orientation = :white, io::IO = stdout)
+    light, dark, reset = chessboard_colors()
+    theme = _get_pref(:theme, DEFAULT_PREFS.theme)
+
+    if board_orientation === :white
+        ranks = 7:-1:0
+        files = 0:7
+    else
+        ranks = 0:7
+        files = 7:-1:0
+    end
+
+    println(io)
+
+    for r in ranks
+        print(io, " ", r + 1, " ")
+        for f in files
+            sq = r * 8 + f
+
+            piece_image = ' '
+            for (ptype, bb) in enumerate(board.bitboards)
+                if testbit(bb, sq)
+                    piece_image = piece_glyph(ptype, theme)
+                    break
+                end
+            end
+
+            # Chessboard coloring is geometric, not orientation-dependent
+            bg = isodd(r + f) ? light : dark
+            print(io, bg, " ", piece_image, " ", reset)
+        end
+        println(io)
+    end
+
+    # File labels
+    if board_orientation === :white
+        println(io, "    a  b  c  d  e  f  g  h")
+    else
+        println(io, "    h  g  f  e  d  c  b  a")
+    end
+end
+
+"""
+    plot(game::Game; board_orientation = :white, io::IO = stdout)
+Display a colored chess board in the terminal using Unicode chess piece characters.
+- `game`: Game struct
+- `board_orientation`: `:white` (default) or `:black` to set the perspective
+- `io`: IO stream to print to (default: `stdout`)
+
+# Example
+```julia
+game = Game()
+plot(game)
+
+# Change orientation
+plot(game; board_orientation = :black)
+
+# Change plot preference colors
+using Preferences
+set_preferences!(
+    OrbisChessEngine,
+    "theme" => "light",
+)
+plot(game)
+```
+"""
+function plot(game::Game; board_orientation = :white, io::IO = stdout)
+    plot(game.board; board_orientation = board_orientation, io = io)
 end
 
 import Base: show
