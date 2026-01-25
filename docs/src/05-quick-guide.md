@@ -102,22 +102,22 @@ The engine will then automatically allocate how much time to use for each move. 
 engine_move!(game)
 ```
 
-Combining everything we can let the engine play against itself in a 1+1 game:
+Combining everything we can let the engine play against itself in a 1+1 game against itself:
 
 ```julia
 game = Game("1+1")
-plots = []
+bords = [deepcopy(game.board)]
 while game_status(game.board) == :ongoing
     engine_move!(game)
-    push!(plots, display(game))
+    push!(bords, deepcopy(game.board))
 end
 ```
 
 And view the game:
 
 ```julia
-for i in eachindex(plots)
+for i in eachindex(bords)
     sleep(0.5)
-    display(plots[i])
+    plot(bords[i])
 end
 ```

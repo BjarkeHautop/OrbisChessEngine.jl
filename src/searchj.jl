@@ -291,8 +291,8 @@ function _search(
     side_to_move = board.side_to_move
 
     # Seems to be broken? Disabling for now...
-    # Null move pruning (only if endgame and not in check)
-    # if (depth > NULL_MOVE_REDUCTION + 1) && is_endgame(board) &&
+    # Null move pruning (only if not endgame (to avoid zugzwang stuff) and not in check)
+    # if (depth > NULL_MOVE_REDUCTION + 1) && !is_endgame(board) &&
     #    !in_check(board, side_to_move)
     #     make_null_move!(board)
     #     result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, -β, -β + 1,
