@@ -60,10 +60,10 @@ We can undo a move using `undo_move()` or the in-place version `undo_move!()`:
 undo_move!(board, mv)
 ```
 
-Note that `make_move()` (and the in-place version `make_move!()`) does **not** check legality, so it is possible to make illegal moves. To ensure moves are legal, you can use `apply_move()` (or the in-place version `apply_move!()`), which will throw an error if any move is illegal.
+Note that `make_move()` (and the in-place version `make_move!()`) does **not** check legality, so it is possible to make illegal moves. To ensure moves are legal, you can use `apply_moves()` (or the in-place version `apply_moves!()`), which will throw an error if any move is illegal.
 
 ```julia
-apply_move!(board, "e2e4", "e7e5", "g1f3", "b8c6", "f1b5")
+apply_moves!(board, "e2e4", "e7e5", "g1f3", "b8c6", "f1b5")
 ```
 
 You can check the game status using `game_status()`:
