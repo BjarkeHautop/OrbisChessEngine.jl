@@ -17,9 +17,12 @@ mutable struct Game
     increment::Int    # per-move increment in ms
 end
 
-function time_management(remaining_ms::Int, increment_ms::Int)
-    # Base heuristic
-    base = remaining_ms ÷ 30
+function time_management(
+        remaining_ms::Int, increment_ms::Int, movestogo::Union{Int, Nothing} = nothing)
+    # Base heuristic: split remaining time across moves-to-next-control if
+    # given (classical time controls), else assume a flat 30 (sudden death).
+    divisor = movestogo === nothing ? 30 : max(movestogo, 1)
+    base = remaining_ms ÷ divisor
     bonus = (increment_ms * 3) ÷ 5    # 0.6 * increment
 
     opt_time = base + bonus

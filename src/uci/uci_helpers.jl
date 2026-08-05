@@ -206,25 +206,29 @@ function handle_go(command::String, board)
     if depth !== nothing
         search_depth = depth
         time_budget = something(movetime, typemax(Int))
+        max_time_budget = time_budget
     elseif movetime !== nothing
         search_depth = 64
         time_budget = movetime
+        max_time_budget = time_budget
     elseif has_time_control
         remaining = board.side_to_move == WHITE ? get(search_params, "wtime", 0) :
                     get(search_params, "btime", 0)
         increment = board.side_to_move == WHITE ? get(search_params, "winc", 0) :
                     get(search_params, "binc", 0)
-        opt_time, _ = time_management(remaining, increment)
+        movestogo = get(search_params, "movestogo", nothing)
+        time_budget, max_time_budget = time_management(remaining, increment, movestogo)
         search_depth = 64
-        time_budget = opt_time
     else
         # Bare "go" / "go infinite": no live-cancellable search yet, so fall
         # back to a fixed, safe depth instead of searching unboundedly.
         search_depth = DEFAULT_GO_DEPTH
         time_budget = typemax(Int)
+        max_time_budget = time_budget
     end
 
-    result = search(board; depth = search_depth, time_budget = time_budget, uci_info = true)
+    result = search(board; depth = search_depth, time_budget = time_budget,
+        max_time_budget = max_time_budget, uci_info = true)
     println(result === nothing ? "bestmove 0000" : "bestmove $(to_uci(result.move))")
 end
 

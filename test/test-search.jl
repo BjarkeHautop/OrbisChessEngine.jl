@@ -123,3 +123,26 @@ end
     @test hit == true
     @test move === OrbisChessEngine.NO_MOVE
 end
+
+@testset "TT mate scores are re-anchored by ply, not reused as-is" begin
+    OrbisChessEngine.tt_clear!()
+    h = UInt64(0xdead_beef)
+    mv = Move("e2", "e4")
+
+    remaining = 2   # plies from this position itself to checkmate
+    stored_ply = 3  # ply of the node that stored it, in the search that found it
+    OrbisChessEngine.tt_store(
+        h, OrbisChessEngine.MATE_VALUE - (stored_ply + remaining),
+        5, OrbisChessEngine.EXACT, mv, stored_ply)
+
+    # Retrieved via transposition at different plies, in different (later)
+    # searches: the position is still "mate in `remaining` plies from
+    # itself", so the score must come back re-anchored to each new ply.
+    for new_ply in (0, 7)
+        val, move, hit = OrbisChessEngine.tt_probe(
+            h, 5, -OrbisChessEngine.MATE_VALUE, OrbisChessEngine.MATE_VALUE, new_ply)
+        @test hit
+        @test val == OrbisChessEngine.MATE_VALUE - (new_ply + remaining)
+        @test move == mv
+    end
+end
