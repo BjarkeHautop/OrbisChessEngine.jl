@@ -243,11 +243,21 @@ Result of a search operation.
 - `score`: The evaluation score of the position.
 - `move`: The best move found.
 - `from_book`: Boolean indicating if the move was from the opening book.
+- `complete`: `true` if `score`/`move` reflect a fully-evaluated node —
+  every legal move at this node was compared (or a genuine alpha-beta
+  cutoff occurred), as opposed to the node being cut short mid-loop by the
+  time budget. A node that receives an incomplete child result immediately
+  marks itself incomplete too, so a mid-search timeout can't masquerade as
+  a real value anywhere in the tree. `search_root` only adopts a depth's
+  result when it's complete, so a timeout partway through comparing root
+  moves can't overwrite a shallower depth's fully-compared answer with an
+  arbitrary partial one.
 """
 struct SearchResult
     score::Int
     move::Move
     from_book::Bool
+    complete::Bool
 end
 
 # Alpha-beta search with quiescence at leaves
@@ -268,16 +278,18 @@ function _search(
 )::SearchResult
     NODE_COUNT[] += 1
 
-    # Time check
+    # Time check. Nothing has been evaluated at this node yet, so there's no
+    # real score to report — `complete = false` tells the caller not to
+    # treat this as a trustworthy value.
     if (time_ns() ÷ 1_000_000) >= stop_time
-        return SearchResult(0, NO_MOVE, false)
+        return SearchResult(0, NO_MOVE, false, false)
     end
 
     # Opening book
     if opening_book !== nothing && ply == 0
         book_mv = book_move(board, opening_book)
         if book_mv !== nothing
-            return SearchResult(0, book_mv, true)
+            return SearchResult(0, book_mv, true, true)
         end
     end
 
@@ -286,12 +298,12 @@ function _search(
     # TT lookup
     val, move, hit = tt_probe(hash_before, depth, α, β)
     if hit
-        return SearchResult(val, move, false)
+        return SearchResult(val, move, false, true)
     end
 
     # Leaf node: quiescence search
     if depth == 0
-        return SearchResult(quiescence(board, α, β), NO_MOVE, false)
+        return SearchResult(quiescence(board, α, β), NO_MOVE, false, true)
     end
 
     side_to_move = board.side_to_move
@@ -336,7 +348,7 @@ function _search(
     if n_moves == 0
         val = in_check(board, side_to_move) ?
               (side_to_move == WHITE ? -MATE_VALUE + ply : MATE_VALUE - ply) : 0
-        return SearchResult(val, NO_MOVE, false)
+        return SearchResult(val, NO_MOVE, false, true)
     end
 
     # Draw detection. Placed after move generation (which happens
@@ -346,7 +358,7 @@ function _search(
     # runs at every quiescence node and would force move generation there too.
     if is_insufficient_material(board) || is_threefold_repetition(board) ||
        is_fifty_move_rule(board)
-        return SearchResult(0, NO_MOVE, false)
+        return SearchResult(0, NO_MOVE, false, true)
     end
 
     # Precompute move scores
@@ -375,9 +387,12 @@ function _search(
 
         m = moves[i]
 
-        # Time check
+        # Time check. Some sibling moves may already have been compared
+        # (best_move may be set), but not all of them — a comparison across
+        # only part of the move list isn't the true minimax value for this
+        # node, so this is always incomplete, regardless of best_move.
         if (time_ns() ÷ 1_000_000) >= stop_time
-            return SearchResult(best_score, best_move, false)
+            return SearchResult(best_score, best_move, false, false)
         end
 
         # Search child node
@@ -386,6 +401,15 @@ function _search(
             opening_book, stop_time,
             moves_stack, pseudo_stack, score_stack)
         undo_move!(board, m)
+
+        if !result.complete
+            # The child's search was cut short by the time budget, so
+            # result.score isn't a trustworthy minimax value — comparing it
+            # against sibling moves here would corrupt this node's score the
+            # same way, and the corruption would compound on the way back up
+            # the tree. Stop and report this node incomplete too.
+            return SearchResult(best_score, best_move, false, false)
+        end
 
         # Alpha-beta update
         if side_to_move == WHITE
@@ -420,7 +444,7 @@ function _search(
     end
     tt_store(hash_before, best_score, depth, node_type, best_move)
 
-    return SearchResult(best_score, best_move, false)
+    return SearchResult(best_score, best_move, false, true)
 end
 
 function tt_probe_raw(hash::UInt64)
@@ -489,7 +513,11 @@ function search_root(board::Board, max_depth::Int;
 )::SearchResult
     search_start = Int(time_ns() ÷ 1_000_000)
     # Use NO_MOVE as placeholder internally
-    best_result_internal = SearchResult(0, NO_MOVE, false)
+    best_result_internal = SearchResult(0, NO_MOVE, false, false)
+    # Absolute last-resort fallback: the best move seen from *any* iteration,
+    # complete or not. Only used if no depth ever completes (e.g. an
+    # extremely tight time budget) — better than emitting no move at all.
+    fallback_result = SearchResult(0, NO_MOVE, false, false)
 
     moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(max_depth + 1)]
     pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(max_depth + 1)]
@@ -503,7 +531,7 @@ function search_root(board::Board, max_depth::Int;
                 println("Book move found: $book_mv")
             end
             # Return book move directly
-            return SearchResult(0, book_mv, true)
+            return SearchResult(0, book_mv, true, true)
         end
     end
 
@@ -516,12 +544,22 @@ function search_root(board::Board, max_depth::Int;
             opening_book, max_stop_time,
             moves_stack, pseudo_stack, score_stack)
 
-        # Keep the internal best result
         if result.move !== NO_MOVE
+            fallback_result = result
+        end
+
+        # Only adopt a depth's result once it's `complete` — i.e. every root
+        # move was actually compared (or a genuine alpha-beta cutoff
+        # occurred), never a node cut short mid-loop by the time budget. A
+        # timeout partway through comparing root moves at depth N must not
+        # overwrite depth N-1's fully-compared answer with an arbitrary
+        # partial one — see search_root's docstring / the investigation this
+        # fixed.
+        if result.complete && result.move !== NO_MOVE
             best_result_internal = result
         end
 
-        if result.move !== NO_MOVE && (verbose || uci_info)
+        if result.complete && result.move !== NO_MOVE && (verbose || uci_info)
             pv = extract_root_pv(board, best_result_internal.move, depth)
 
             if verbose
@@ -552,8 +590,11 @@ function search_root(board::Board, max_depth::Int;
         end
     end
 
-    return SearchResult(best_result_internal.score, best_result_internal.move,
-        best_result_internal.from_book)
+    # Normally best_result_internal (a completed depth) is what we return.
+    # Only fall back to the best-effort partial result if literally no depth
+    # ever completed (e.g. a pathologically tight time budget) — emitting
+    # some legal move beats emitting none.
+    return best_result_internal.move !== NO_MOVE ? best_result_internal : fallback_result
 end
 
 """

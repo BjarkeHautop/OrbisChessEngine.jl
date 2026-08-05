@@ -41,6 +41,25 @@ end
     @test true  # Just ensure it completes without error
 end
 
+@testset "Search does not hang a piece on a truncated iteration (regression)" begin
+    # Position from a cutechess-cli game against Stockfish:
+    # White's knight on d4 is undefended and attacked
+    # by the bishop on c5.
+    # Orbis actually played 11.Bxa6?? here and went on to lose.
+    b = Board(fen = "r1bqk2r/1p1n1ppp/p4n2/2bP4/3N1P2/8/PP1NB1PP/R1BQK2R w KQkq - 1 11")
+    result = search(b; depth = 6, opening_book = nothing, time_budget = 1000)
+    @test result !== nothing
+
+    make_move!(b, result.move)
+    d4 = OrbisChessEngine.square_from_name("d4")
+    if OrbisChessEngine.piece_at(b, d4) == Piece.W_KNIGHT
+        # The knight is still on d4: it must no longer be a free capture —
+        # either White now defends it, or Black no longer attacks it.
+        @test OrbisChessEngine.square_attacked(b, d4, WHITE) ||
+              !OrbisChessEngine.square_attacked(b, d4, BLACK)
+    end
+end
+
 @testset "Search works in stalemate position" begin
     b = Board(fen = "4k3/4P3/4K3/8/8/8/8/8 b - - 0 1")
     output = search(b; depth = 1, opening_book = nothing, verbose = true)
