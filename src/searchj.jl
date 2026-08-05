@@ -290,22 +290,22 @@ function _search(
 
     side_to_move = board.side_to_move
 
-    # Seems to be broken? Disabling for now...
     # Null move pruning (only if not endgame (to avoid zugzwang stuff) and not in check)
-    # if (depth > NULL_MOVE_REDUCTION + 1) && !is_endgame(board) &&
-    #    !in_check(board, side_to_move)
-    #     make_null_move!(board)
-    #     result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, -β, -β + 1,
-    #         nothing, stop_time,
-    #         moves_stack, pseudo_stack, score_stack)
-    #     undo_null_move!(board)
+    if (depth > NULL_MOVE_REDUCTION + 1) && !is_endgame(board) &&
+       !in_check(board, side_to_move)
+        make_null_move!(board)
+        null_α, null_β = side_to_move == WHITE ? (β - 1, β) : (α, α + 1)
+        result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, null_α, null_β,
+            nothing, stop_time,
+            moves_stack, pseudo_stack, score_stack)
+        undo_null_move!(board)
 
-    #     if side_to_move == WHITE && result.score >= β
-    #         return SearchResult(result.score, NO_MOVE, false)
-    #     elseif side_to_move == BLACK && result.score <= α
-    #         return SearchResult(result.score, NO_MOVE, false)
-    #     end
-    # end
+        if side_to_move == WHITE && result.score >= β
+            return SearchResult(result.score, NO_MOVE, false)
+        elseif side_to_move == BLACK && result.score <= α
+            return SearchResult(result.score, NO_MOVE, false)
+        end
+    end
 
     moves = moves_stack[ply + 1]
     pseudo = pseudo_stack[ply + 1]

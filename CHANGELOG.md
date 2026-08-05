@@ -6,6 +6,11 @@
 
 - `plot` now renders a graphical `Makie.Figure` when a Makie backend (`CairoMakie`, `GLMakie`, `WGLMakie`, ...) plus `FileIO` and `Images` are loaded, and falls back to the terminal renderer otherwise.
 
+### Bug fixes
+
+- Fixed `Move(board, str)` always inferring the *black* promotion piece regardless of which side was actually promoting (e.g. `Move(board, "e7e8=Q")` produced a black queen for a white pawn).
+- Re-enabled null-move pruning in `search`, which had been disabled due to an incorrect alpha-beta window; it now searches noticeably faster at the same depth.
+
 ## [0.3.0] - 2026-05-07
 
 ### Breaking Changes
