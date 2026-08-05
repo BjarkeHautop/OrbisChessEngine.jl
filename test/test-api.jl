@@ -21,26 +21,32 @@ end
     m2 = Move(b, "e7e8=Q")
     @test m2.from == 52
     @test m2.to == 60
-    @test m2.promotion == Piece.B_QUEEN
+    @test m2.promotion == Piece.W_QUEEN
     @test string(m2) == "e7e8=Q"
 
     m3 = Move(b, "e7e8=R")
     @test m3.from == 52
     @test m3.to == 60
-    @test m3.promotion == Piece.B_ROOK
+    @test m3.promotion == Piece.W_ROOK
     @test string(m3) == "e7e8=R"
 
     m4 = Move(b, "e7e8=B")
     @test m4.from == 52
     @test m4.to == 60
-    @test m4.promotion == Piece.B_BISHOP
+    @test m4.promotion == Piece.W_BISHOP
     @test string(m4) == "e7e8=B"
 
     m5 = Move(b, "e7e8=N")
     @test m5.from == 52
     @test m5.to == 60
-    @test m5.promotion == Piece.B_KNIGHT
+    @test m5.promotion == Piece.W_KNIGHT
     @test string(m5) == "e7e8=N"
+
+    # Promotion piece color should match the side to move, not the piece
+    # actually standing on the from-square (Move() does not validate legality).
+    b_black = Board(fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+    m2_black = Move(b_black, "e7e8=Q")
+    @test m2_black.promotion == Piece.B_QUEEN
 
     m6 = Move(b, "O-O")
     @test m6.from == 4

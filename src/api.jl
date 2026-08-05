@@ -93,20 +93,20 @@ function piece_symbol(piece)
 end
 
 """
-    piece_from_symbol(c::AbstractChar, side::Symbol)
+    piece_from_symbol(c::AbstractChar, side::Side)
 
-Return the piece constant corresponding to promotion symbol `c` and the moving side (`:white` or `:black`).
+Return the piece constant corresponding to promotion symbol `c` and the moving side (`WHITE` or `BLACK`).
 """
 function piece_from_symbol(c::AbstractChar, side::Side)
     piece = nothing
     if c == 'Q'
-        piece = side == :white ? Piece.W_QUEEN : Piece.B_QUEEN
+        piece = side == WHITE ? Piece.W_QUEEN : Piece.B_QUEEN
     elseif c == 'R'
-        piece = side == :white ? Piece.W_ROOK : Piece.B_ROOK
+        piece = side == WHITE ? Piece.W_ROOK : Piece.B_ROOK
     elseif c == 'B'
-        piece = side == :white ? Piece.W_BISHOP : Piece.B_BISHOP
+        piece = side == WHITE ? Piece.W_BISHOP : Piece.B_BISHOP
     elseif c == 'N'
-        piece = side == :white ? Piece.W_KNIGHT : Piece.B_KNIGHT
+        piece = side == WHITE ? Piece.W_KNIGHT : Piece.B_KNIGHT
     else
         error("Invalid promotion piece: $c")
     end
