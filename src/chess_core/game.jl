@@ -161,15 +161,11 @@ Check for threefold repetition
 Returns: Bool
 """
 function is_threefold_repetition(board::Board)
-    n = 0
-    # Update to not use findlast
-    last_index = findlast(!=(0), board.position_history)
+    last_index = board.undo_index + 1  # position_history[undo_index + 1] is the current hash
     last_key = board.position_history[last_index]
-    for k in board.position_history
-        if k == 0
-            break  # stop at unused entries
-        end
-        n += k == last_key ? 1 : 0
+    n = 0
+    @inbounds for i in 1:last_index
+        n += board.position_history[i] == last_key ? 1 : 0
     end
     return n >= 3
 end
