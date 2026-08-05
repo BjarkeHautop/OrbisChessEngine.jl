@@ -67,7 +67,10 @@ function is_move_legal(board::Board, m::Move, side::Side,
         end
     end
 
-    if !in_check_now && !ray_between(occ, king_sq, m.from) && m.from != king_sq
+    # En passant clears the captured pawn's square in addition to m.from, which can
+    # open a discovered check that ray_between (checking only m.from) won't see.
+    if !in_check_now && !m.en_passant && !ray_between(occ, king_sq, m.from) &&
+       m.from != king_sq
         return true
     else
         make_move!(board, m)

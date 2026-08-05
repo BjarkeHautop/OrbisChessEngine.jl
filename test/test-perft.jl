@@ -39,3 +39,13 @@ end
     @test perft_bishop_magic(b, 4) == 197_281
     @test perft_bishop_magic(b, 5) == 4_865_609
 end
+
+# Capturing en passant can clear two squares on the same rank/file/diagonal
+@testset "perft en passant discovered check tests" begin
+    b = Board(fen = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1")
+    @test perft(b, 1) == 14
+    @test perft(b, 2) == 191
+    @test perft(b, 3) == 2812
+    @test perft(b, 4) == 43_238
+    @test perft(b, 5) == 674_624
+end
