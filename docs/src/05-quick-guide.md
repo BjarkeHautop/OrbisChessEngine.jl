@@ -1,4 +1,9 @@
-# [Getting Started](@id quick_guide)
+# [Getting Started: Playing Interactively](@id quick_guide)
+
+This guide covers using OrbisChessEngine as a Julia package — creating positions,
+making moves, and calling the engine directly from Julia code. To use it as a
+UCI engine from a GUI or a tool like `cutechess-cli` instead, see the
+[UCI guide](@ref uci_guide).
 
 ## Installation
 
@@ -36,6 +41,10 @@ To view the board we can use `plot()`:
 ```julia
 plot(board)
 ```
+
+`plot` prints a colored board to the terminal by default. If a Makie backend (e.g.
+`CairoMakie`) plus `FileIO` and `Images` are loaded first, it returns a graphical
+`Figure` instead.
 
 If using a light theme editor, you might want to set your preferences to use light theme for the chess board.
 
@@ -121,18 +130,3 @@ for i in eachindex(bords)
     plot(bords[i])
 end
 ```
-
-## Using the Engine over UCI
-
-Orbis also speaks a subset of the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)
-protocol (`position`, `go` with `depth`/`movetime`/`wtime`+`btime`), so it can
-be driven by a UCI-speaking GUI or a tool like `cutechess-cli`. Launch it as
-a subprocess with:
-
-```bash
-julia --project=. bin/orbis_uci.jl
-```
-
-`go infinite`/`stop` do not yet interrupt an in-progress search, since search
-currently runs synchronously to completion rather than in a cancellable
-background task.

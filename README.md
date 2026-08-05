@@ -8,10 +8,6 @@
 [![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 [![BestieTemplate](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/JuliaBesties/BestieTemplate.jl/main/docs/src/assets/badge.json)](https://github.com/JuliaBesties/BestieTemplate.jl)
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/BjarkeHautop/OrbisChessEngine.jl/main/assets/logo.jpg" alt="Orbis Logo" width="200"/>
-</p>
-
 A Julia package that implements chess from scratch alongside a chess engine, **Orbis**. It provides functionalities to represent the chessboard, validate moves, and evaluate positions.
 Particularly, *OrbisChessEngine* implements:
 
@@ -35,42 +31,37 @@ pkg> add OrbisChessEngine
 
 ## Example
 
-Here we show an example of how to let the engine play a "1+1" game against itself and plot it afterwards to view it.
+Here we show an example of how to let the engine play a "1+1" game against itself and view it move by move afterwards.
 
 ```julia
 game = Game("1+1")
-plots = []
+boards = [deepcopy(game.board)]
 while game_status(game.board) == :ongoing
     engine_move!(game)
-    push!(plots, display(game))
+    push!(boards, deepcopy(game.board))
 end
 
-for i in eachindex(plots)
+for i in eachindex(boards)
     sleep(0.5)
-    display(plots[i])
+    plot(boards[i])
 end
 ```
 
+`plot` prints a colored board to the terminal by default. If a Makie backend (e.g. `CairoMakie`) plus `FileIO` and `Images` are loaded it returns a graphical `Figure`
+instead.
+
+## Usage as a UCI engine
+
+Orbis also speaks a subset of the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, so it can be driven by a UCI-speaking GUI or a tool like `cutechess-cli`. Launch it as a subprocess with:
+
+```bash
+julia --project=. bin/orbis_uci.jl
+```
+
+See the [UCI guide](https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/10-uci-guide/) for supported commands.
+
 ## Resources
 
-View the documentation at [https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/](https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/).
+View the documentation at [https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/](https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/), including an estimate of Orbis's playing strength and instructions for reproducing it on the "Benchmarks" page.
 
 Visit chess programming wiki for useful articles on chess engine programming: [https://www.chessprogramming.org/Main_Page](https://www.chessprogramming.org/Main_Page).
-
-## TODO
-
-- Fix mate-score handling in the transposition table (`tt_probe`/`tt_store` in `searchj.jl` don't adjust scores by ply, so a mate score cached at one ply can be reused via transposition at a different ply and corrupt the score) and re-enable null-move pruning, which is disabled because it surfaces this
-
-- Improve search performance by minimizing allocations
-
-- Improve evaluation function (e.g. add pawn structure, king safety, trapped pieces, etc.)
-
-- Add support for multiple threads in search (e.g. lazy SMP)
-
-- Support live-cancellable search (`go infinite` / `stop`) in the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) implementation, for pondering
-
-- Make executable with [PackageCompiler.jl](https://julialang.github.io/PackageCompiler.jl/dev/)
-
-- Add magic bitboards for faster move generation (added for bishops, but not yet used. Minimal performance improvement observed - see [Benchmarks](https://bjarkehautop.github.io/OrbisChessEngine.jl/dev/40-benchmarks/) for details.)
-
-- Implement into Lichess bot (see <https://github.com/lichess-bot-devs/lichess-bot>)

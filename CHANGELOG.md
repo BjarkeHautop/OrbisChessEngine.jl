@@ -2,14 +2,19 @@
 
 ## Unreleased
 
-### Breaking Changes
+### New features
 
-- `plot` now renders a graphical `Makie.Figure` when a Makie backend (`CairoMakie`, `GLMakie`, `WGLMakie`, ...) plus `FileIO` and `Images` are loaded, and falls back to the terminal renderer otherwise.
+- Added a history heuristic to move ordering.
+- Added Principal Variation Search (PVS) and Late Move Reductions (LMR) to the search.
+- Added reverse futility pruning and futility pruning, cutting unpromising nodes/moves at shallow search depth.
+- Added a working UCI implementation (`run_uci()`, launched via `julia --project=. bin/orbis_uci.jl`), supporting `position` and `go` with `depth`, `movetime`, and `wtime`/`btime` time control. `go infinite`/`stop` don't yet interrupt an in-progress search.
+- Added a MakieExtension: `plot` now renders a `Makie.Figure` when a Makie backend plus `FileIO` and `Images` are loaded, and falls back to the terminal renderer otherwise.
 
 ### Bug fixes
 
-- Fixed `Move(board, str)` always inferring the *black* promotion piece regardless of which side was actually promoting (e.g. `Move(board, "e7e8=Q")` produced a black queen for a white pawn).
-- Re-enabled null-move pruning in `search`, which had been disabled due to an incorrect alpha-beta window; it now searches noticeably faster at the same depth.
+- Fixed `Move(board, str)` always inferring the *black* promotion piece regardless of which side was actually promoting.
+- Fixed a dead condition in move ordering's check bonus that meant it never actually applied.
+- Fixed mate scores in the transposition table not being adjusted by ply, which could corrupt search scores via transposition; null-move pruning, previously disabled because of this, is re-enabled.
 
 ## [0.3.0] - 2026-05-07
 
