@@ -7,6 +7,10 @@ const MAX_PLY = 128  # safe upper bound for typical search depth
 const NO_MOVE = Move(0, 0, 0, 0, 0, false)
 const KILLERS = [MVector{MAX_PLY, Move}(fill(NO_MOVE, MAX_PLY)) for _ in 1:MAX_PLY]
 
+# Node counter for diagnostics (UCI "info ... nodes ... nps ..."). Reset at
+# the start of every search() call.
+const NODE_COUNT = Ref(0)
+
 """
 Store a killer move for the given ply.
 Only quiet moves (non-captures) are stored.
@@ -160,6 +164,7 @@ const pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(MAX_QUIESCENCE
 function quiescence(board::Board, α::Int, β::Int;
         ply::Int = 0
 )
+    NODE_COUNT[] += 1
     side_to_move = board.side_to_move
     static_eval = evaluate(board)  # evaluation if we stop here
 
@@ -261,6 +266,7 @@ function _search(
         pseudo_stack,
         score_stack
 )::SearchResult
+    NODE_COUNT[] += 1
 
     # Time check
     if (time_ns() ÷ 1_000_000) >= stop_time
@@ -290,22 +296,36 @@ function _search(
 
     side_to_move = board.side_to_move
 
-    # Null move pruning (only if not endgame (to avoid zugzwang stuff) and not in check)
-    if (depth > NULL_MOVE_REDUCTION + 1) && !is_endgame(board) &&
-       !in_check(board, side_to_move)
-        make_null_move!(board)
-        null_α, null_β = side_to_move == WHITE ? (β - 1, β) : (α, α + 1)
-        result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, null_α, null_β,
-            nothing, stop_time,
-            moves_stack, pseudo_stack, score_stack)
-        undo_null_move!(board)
+    # Null move pruning — DISABLED again.
+    #
+    # Root cause found: tt_probe/tt_store (above) store and return mate
+    # scores (±(MATE_VALUE - ply)) with no ply adjustment relative to the
+    # node they're stored at. A mate score cached at one ply and then hit
+    # via transposition at a *different* ply is reused as-is, corrupting the
+    # score (reproduced directly: a search returned score == MATE_VALUE
+    # exactly, i.e. "mate in 0", in a completely quiet middlegame position).
+    # This is a latent bug independent of null-move pruning, but null-move
+    # search reaches extra positions via reduced-depth sub-trees and
+    # transposes into mate-adjacent scores far more often, so it surfaces
+    # here in practice. Confirmed by A/B testing the same position with this
+    # block disabled: the bogus score disappears and a sane move is chosen.
+    # Re-enable once tt_store/tt_probe adjust mate scores by ply (store
+    # relative to the node, add/subtract ply back out on retrieval).
+    # if (depth > NULL_MOVE_REDUCTION + 1) && !is_endgame(board) &&
+    #    !in_check(board, side_to_move)
+    #     make_null_move!(board)
+    #     null_α, null_β = side_to_move == WHITE ? (β - 1, β) : (α, α + 1)
+    #     result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, null_α, null_β,
+    #         nothing, stop_time,
+    #         moves_stack, pseudo_stack, score_stack)
+    #     undo_null_move!(board)
 
-        if side_to_move == WHITE && result.score >= β
-            return SearchResult(result.score, NO_MOVE, false)
-        elseif side_to_move == BLACK && result.score <= α
-            return SearchResult(result.score, NO_MOVE, false)
-        end
-    end
+    #     if side_to_move == WHITE && result.score >= β
+    #         return SearchResult(result.score, NO_MOVE, false)
+    #     elseif side_to_move == BLACK && result.score <= α
+    #         return SearchResult(result.score, NO_MOVE, false)
+    #     end
+    # end
 
     moves = moves_stack[ply + 1]
     pseudo = pseudo_stack[ply + 1]
@@ -317,6 +337,16 @@ function _search(
         val = in_check(board, side_to_move) ?
               (side_to_move == WHITE ? -MATE_VALUE + ply : MATE_VALUE - ply) : 0
         return SearchResult(val, NO_MOVE, false)
+    end
+
+    # Draw detection. Placed after move generation (which happens
+    # unconditionally above, so this is free) and after the checkmate/
+    # stalemate check (checkmate always takes priority over a draw claim,
+    # matching game_status's precedence) — not inside evaluate(), since that
+    # runs at every quiescence node and would force move generation there too.
+    if is_insufficient_material(board) || is_threefold_repetition(board) ||
+       is_fifty_move_rule(board)
+        return SearchResult(0, NO_MOVE, false)
     end
 
     # Precompute move scores
@@ -425,12 +455,39 @@ end
 
 # Root-level iterative deepening search
 
+"""
+Print a UCI "info" line for the given depth's result: score (relative to the
+side to move, per the UCI spec), elapsed time, node count/rate, and PV in
+UCI notation.
+"""
+function uci_info_line(
+        depth::Int, score::Int, pv::Vector{Move}, side_to_move::Side, start_ms::Int)
+    elapsed = max(1, (time_ns() ÷ 1_000_000) - start_ms)
+    nodes = NODE_COUNT[]
+    nps = (nodes * 1000) ÷ elapsed
+    pv_str = join(to_uci.(pv), " ")
+
+    stm_score = side_to_move == WHITE ? score : -score
+    score_str = if abs(score) >= MATE_THRESHOLD
+        mate_plies = MATE_VALUE - abs(score)
+        mate_moves = cld(mate_plies, 2)
+        "mate $(stm_score < 0 ? -mate_moves : mate_moves)"
+    else
+        "cp $stm_score"
+    end
+
+    println("info depth $depth score $score_str time $elapsed nodes $nodes " *
+            "nps $nps pv $pv_str")
+end
+
 function search_root(board::Board, max_depth::Int;
         opt_stop_time::Int = typemax(Int),
         max_stop_time::Int = typemax(Int),
         opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
-        verbose::Bool = false
+        verbose::Bool = false,
+        uci_info::Bool = false
 )::SearchResult
+    search_start = Int(time_ns() ÷ 1_000_000)
     # Use NO_MOVE as placeholder internally
     best_result_internal = SearchResult(0, NO_MOVE, false)
 
@@ -464,10 +521,18 @@ function search_root(board::Board, max_depth::Int;
             best_result_internal = result
         end
 
-        if verbose && result.move !== NO_MOVE
+        if result.move !== NO_MOVE && (verbose || uci_info)
             pv = extract_root_pv(board, best_result_internal.move, depth)
-            pv_str = join(string.(pv), " ")
-            println("Depth $depth | Score: $(best_result_internal.score) | PV: $pv_str")
+
+            if verbose
+                pv_str = join(string.(pv), " ")
+                println("Depth $depth | Score: $(best_result_internal.score) | PV: $pv_str")
+            end
+
+            if uci_info
+                uci_info_line(depth, best_result_internal.score, pv,
+                    board.side_to_move, search_start)
+            end
         end
 
         # Stop early if a mate is found
@@ -497,6 +562,7 @@ end
         depth::Int,
         opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
         verbose::Bool = false,
+        uci_info::Bool = false,
         time_budget::Int = typemax(Int)
     )::SearchResult
 
@@ -509,7 +575,12 @@ Arguments:
 - `opening_book`: if provided, uses a opening book. Default is `KOMODO_OPENING_BOOK`
 taken from [free-opening-books](https://github.com/gmcheems-org/free-opening-books).
 Set to `nothing` to disable. See [`load_polyglot_book`](@ref) to load custom books.
-- `verbose`: if true, prints search information and principal variation (PV) at each depth
+- `verbose`: if true, prints human-readable search information and principal
+  variation (PV) at each depth
+- `uci_info`: if true, prints a UCI-style `info depth ... score ... time ...
+  nodes ... nps ... pv ...` line at each depth (score is relative to the side
+  to move, per the UCI spec, unlike the always-White-relative `score` field
+  on the returned `SearchResult`)
 - `time_budget`: time in milliseconds to stop the search (if depth not reached)
 Returns:
 - `SearchResult` containing the best move and its evaluation score (or `nothing` if no move found)
@@ -525,14 +596,16 @@ function search(
         depth::Int,
         opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
         verbose::Bool = false,
+        uci_info::Bool = false,
         time_budget::Int = typemax(Int)
 )
     tt_clear!()  # reset TT for this search
+    NODE_COUNT[] = 0
     tb = min(time_budget, 1_000_000_000)  # cap to 1e9 ms ~ 11 days
     stop_time = Int((time_ns() ÷ 1_000_000) + tb)
     result = search_root(board, depth; opt_stop_time = stop_time,
         max_stop_time = stop_time, opening_book = opening_book,
-        verbose = verbose)
+        verbose = verbose, uci_info = uci_info)
     # Convert NO_MOVE to nothing for public API
     if result.move === NO_MOVE
         if verbose

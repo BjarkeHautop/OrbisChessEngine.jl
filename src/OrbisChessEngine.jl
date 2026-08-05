@@ -62,4 +62,7 @@ export book_move, polyglot_hash, KOMODO_OPENING_BOOK
 # ui
 export plot
 
+# UCI
+export run_uci
+
 end

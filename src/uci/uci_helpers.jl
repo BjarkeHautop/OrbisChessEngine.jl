@@ -4,6 +4,52 @@
 # Need to modify game struct to support different time increments for
 # white and black, moves to next time control, etc.
 
+# Fallback search depth for "go" with no depth/movetime/wtime/btime given
+# (including "go infinite"). True infinite-search-until-stop isn't supported
+# yet, since the search runs synchronously and isn't cancellable mid-flight.
+const DEFAULT_GO_DEPTH = 6
+
+"""
+    to_uci(m::Move) -> String
+
+Format a `Move` in UCI long algebraic notation, e.g. `"e2e4"`, `"e7e8q"`.
+Unlike `string(m)` (used for human-readable display), this never uses `"O-O"`
+or `"="`, since UCI represents castling as the king's from/to squares and
+promotions with a bare lowercase letter.
+"""
+function to_uci(m::Move)
+    s = string(square_name(m.from), square_name(m.to))
+    if m.promotion != 0
+        s *= lowercase(piece_symbol(m.promotion))
+    end
+    return s
+end
+
+"""
+    find_uci_move(board::Board, uci_str::AbstractString) -> Move
+
+Resolve a UCI move string (e.g. `"e2e4"`, `"e7e8q"`, `"e1g1"` for castling)
+to the matching legal `Move` on `board`. Throws an `ErrorException` if no
+legal move matches.
+"""
+function find_uci_move(board::Board, uci_str::AbstractString)
+    from = square_from_name(uci_str[1:2])
+    to = square_from_name(uci_str[3:4])
+    promotion_char = length(uci_str) > 4 ? uppercase(uci_str[end]) : nothing
+
+    for m in generate_legal_moves(board)
+        m.from != from && continue
+        m.to != to && continue
+        if promotion_char === nothing
+            m.promotion == 0 && return m
+        else
+            m.promotion != 0 && piece_symbol(m.promotion) == string(promotion_char) &&
+                return m
+        end
+    end
+    error("Illegal move '$uci_str'")
+end
+
 function get_engine_version()
     proj_path = normpath(joinpath(@__DIR__, "..", "..", "Project.toml"))
     toml_text = read(proj_path, String)
@@ -73,8 +119,11 @@ function handle_position(command::String)
         error("invalid position command: must be startpos or fen")
     end
 
-    # play moves if provided
-    # ...
+    if moves_index !== nothing
+        for mv_str in tokens[(moves_index + 1):end]
+            make_move!(board, find_uci_move(board, mv_str))
+        end
+    end
 
     return board
 end
@@ -149,24 +198,48 @@ function handle_go(command::String, board)
         end
         i += 1
     end
-    # Call search with the implemented parameters
-    # result = search(board; search_params...)
-    println("bestmove e2e4")  # placeholder
+
+    depth = get(search_params, "depth", nothing)
+    movetime = get(search_params, "movetime", nothing)
+    has_time_control = haskey(search_params, "wtime") || haskey(search_params, "btime")
+
+    if depth !== nothing
+        search_depth = depth
+        time_budget = something(movetime, typemax(Int))
+    elseif movetime !== nothing
+        search_depth = 64
+        time_budget = movetime
+    elseif has_time_control
+        remaining = board.side_to_move == WHITE ? get(search_params, "wtime", 0) :
+                    get(search_params, "btime", 0)
+        increment = board.side_to_move == WHITE ? get(search_params, "winc", 0) :
+                    get(search_params, "binc", 0)
+        opt_time, _ = time_management(remaining, increment)
+        search_depth = 64
+        time_budget = opt_time
+    else
+        # Bare "go" / "go infinite": no live-cancellable search yet, so fall
+        # back to a fixed, safe depth instead of searching unboundedly.
+        search_depth = DEFAULT_GO_DEPTH
+        time_budget = typemax(Int)
+    end
+
+    result = search(board; depth = search_depth, time_budget = time_budget, uci_info = true)
+    println(result === nothing ? "bestmove 0000" : "bestmove $(to_uci(result.move))")
 end
 
 function handle_stop()
-    # Stop searching and return best move found
-    println("bestmove e2e4")  # placeholder
+    # No-op: search runs synchronously and always finishes before the next
+    # command is read, so there is never an in-flight search to interrupt.
 end
 
 function handle_ponderhit()
     # The user has played the expected move. This will be sent if the engine was told to ponder on the same move
     # the user has played. The engine should continue searching but switch from pondering to normal search.
-    # Not implemented yet
-    # search ...
-    println("bestmove e2e4")  # placeholder
+    # No-op: pondering isn't implemented, so there is nothing to switch over.
 end
 
 function handle_quit()
-    exit(0)
+    # No-op: the "quit" token is handled by the run_uci() loop itself, which
+    # breaks out and returns rather than calling exit() from library code.
 end

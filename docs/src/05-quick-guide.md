@@ -121,3 +121,18 @@ for i in eachindex(bords)
     plot(bords[i])
 end
 ```
+
+## Using the Engine over UCI
+
+Orbis also speaks a subset of the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface)
+protocol (`position`, `go` with `depth`/`movetime`/`wtime`+`btime`), so it can
+be driven by a UCI-speaking GUI or a tool like `cutechess-cli`. Launch it as
+a subprocess with:
+
+```bash
+julia --project=. bin/orbis_uci.jl
+```
+
+`go infinite`/`stop` do not yet interrupt an in-progress search, since search
+currently runs synchronously to completion rather than in a cancellable
+background task.

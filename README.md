@@ -22,6 +22,7 @@ Particularly, *OrbisChessEngine* implements:
 - Opening book support
 - Minimax search with alpha–beta pruning, iterative deepening, quiescence search, transposition tables, null move pruning, and move ordering heuristics
 - Evaluation function based on piece-square tables
+- Basic [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol support, via `bin/orbis_uci.jl`
 
 ## Installation
 
@@ -58,13 +59,15 @@ Visit chess programming wiki for useful articles on chess engine programming: [h
 
 ## TODO
 
+- Fix mate-score handling in the transposition table (`tt_probe`/`tt_store` in `searchj.jl` don't adjust scores by ply, so a mate score cached at one ply can be reused via transposition at a different ply and corrupt the score) and re-enable null-move pruning, which is disabled because it surfaces this
+
 - Improve search performance by minimizing allocations
 
 - Improve evaluation function (e.g. add pawn structure, king safety, trapped pieces, etc.)
 
 - Add support for multiple threads in search (e.g. lazy SMP)
 
-- Implement (some of) [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol
+- Support live-cancellable search (`go infinite` / `stop`) in the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) implementation, for pondering
 
 - Make executable with [PackageCompiler.jl](https://julialang.github.io/PackageCompiler.jl/dev/)
 

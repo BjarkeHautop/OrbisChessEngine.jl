@@ -26,6 +26,13 @@ end
     evaluate(board::Board) -> Int
 
 Evaluate a position from White’s perspective using piece-square tables.
+
+Purely a static material+PST sum — it does **not** check for checkmate,
+stalemate, or draws (that used to call `game_status`, which generates legal
+moves; doing that on every call was catastrophically expensive since this
+runs at every quiescence node). Checkmate/stalemate/draw detection is
+`_search`'s responsibility, since it already generates legal moves for every
+node it visits regardless.
 - board: Board struct
 
 # Example
@@ -35,17 +42,6 @@ evaluate(board)
 ````
 """
 function evaluate(board::Board)
-    # --- Check for terminal game states ---
-    status = game_status(board)
-    if status == :checkmate_white
-        return MATE_VALUE
-    elseif status == :checkmate_black
-        return -MATE_VALUE
-    elseif status in (
-        :stalemate, :draw_insufficient_material, :draw_threefold, :draw_fiftymove)
-        return 0
-    end
-
     score = 0
     for (p, bb) in enumerate(board.bitboards)
         while bb != 0
