@@ -4,11 +4,23 @@
 
 ### Breaking Changes
 
+- `plot` now renders a graphical `Makie.Figure` when a Makie backend (`CairoMakie`, `GLMakie`, `WGLMakie`, ...) plus `FileIO` and `Images` are loaded, and falls back to the terminal renderer otherwise.
+
+## [0.3.0] - 2026-05-07
+
+### Breaking Changes
+
 - Renamed `make_timed_move!` function to `engine_move!`.
+
+- Renamed `plot_board()` to `plot()` and the plotting now plots in the terminal instead of using Makie. The colours used for plotting the board can be changed with Preferences.jl, and it contains a theme for light and dark mode.
 
 ### New features
 
 - Added `apply_moves` and `apply_moves!` functions to make several moves in a row (user QOL change).
+
+## Bug fixes
+
+Fixed a bug in the engine causing the evals (and hence moves) to be off.
 
 ## [0.2.1] - 2025-11-15
 
