@@ -11,7 +11,10 @@ using Test
     M2 = Move("d7", "d5")
     make_move!(b, M2)
 
-    @test evaluate(b) == 0
+    # No longer exactly 0: 1.e4 also opens White's queen's diagonal at e2,
+    # while 1...d5 leaves Black's queen's diagonal blocked at e7, so the
+    # mobility term now has a small, legitimate opinion here.
+    @test abs(evaluate(b)) < 10
 
     M3 = Move("e4", "d5"; capture = Piece.B_PAWN)
     make_move!(b, M3)

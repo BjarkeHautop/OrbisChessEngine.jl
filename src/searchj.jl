@@ -446,9 +446,17 @@ function _search(
 
     # Draw detection: after move gen (free, already done) and after
     # mate/stalemate (higher priority); not inside evaluate(), which runs
-    # per quiescence node.
-    if is_insufficient_material(board) || is_threefold_repetition(board) ||
-       is_fifty_move_rule(board)
+    # per quiescence node. Skipped at the root (ply == 0): unlike
+    # checkmate/stalemate, a draw-by-rule position still has legal moves,
+    # and the root needs an actual move to play, not just a score — an
+    # internal node only needs the score, since its parent is comparing it
+    # against sibling moves, not asking it what to play. Without this
+    # guard, a game that reaches e.g. insufficient material at the start
+    # of one of Orbis's own searches gets no move back at all from
+    # `search_root`, which UCI tournament managers treat as an illegal
+    # move (forfeit) rather than a draw.
+    if ply > 0 && (is_insufficient_material(board) || is_threefold_repetition(board) ||
+        is_fifty_move_rule(board))
         return SearchResult(0, NO_MOVE, false, true)
     end
 
