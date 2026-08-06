@@ -449,10 +449,27 @@ function _search(
         end
     end
 
+    hash_before = board.position_history[board.undo_index+1]
+
+    # TT lookup
+    val, move, hit = tt_probe(hash_before, depth, α, β, ply)
+    if hit
+        return SearchResult(val, move, false, true)
+    end
+
     # Leaf node: quiescence search
     if depth == 0
         return SearchResult(quiescence(board, α, β), NO_MOVE, false, true)
     end
+
+    # The move loop below narrows α/β as it goes (standard alpha-beta), so by
+    # the time it's done they no longer reflect the window this node was
+    # actually asked to search -- only alpha_orig/beta_orig do. Classifying
+    # the TT bound type against the narrowed values instead of these is a
+    # bug that previously made every stored entry come out as the wrong
+    # bound type (see the regression test for the details).
+    alpha_orig = α
+    beta_orig = β
 
     side_to_move = board.side_to_move
     own_in_check = in_check(board, side_to_move)
@@ -700,6 +717,17 @@ function _search(
             end
         end
     end
+
+    # TT store: classify against the window this node was originally asked
+    # to search (alpha_orig/beta_orig), not the narrowed α/β left over from
+    # the move loop.
+    node_type = EXACT
+    if best_score <= alpha_orig
+        node_type = UPPERBOUND
+    elseif best_score >= beta_orig
+        node_type = LOWERBOUND
+    end
+    tt_store(hash_before, best_score, depth, node_type, best_move, ply)
 
     return SearchResult(best_score, best_move, false, true)
 end
