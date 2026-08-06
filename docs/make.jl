@@ -26,7 +26,7 @@ makedocs(;
         size_threshold_ignore = ["05-quick-guide.md"],
     ),
     pages = ["index.md"; numbered_pages],
-    plugins = [CodeBlocks()],
+    plugins = [CodeBlocks(line_numbers = false)],
 )
 
 deploydocs(; repo = "github.com/BjarkeHautop/OrbisChessEngine.jl")

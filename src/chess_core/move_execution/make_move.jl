@@ -1,7 +1,7 @@
 """
     make_move!(board::Board, m::Move)
 
-Apply the move `m` to `board` **in-place**, updating the board state, castling rights, en passant square,
+Apply the move `m` to `board` in-place, updating the board state, castling rights, en passant square,
 halfmove clock, and internal evaluation.
 
 - `board`: a `Board` struct representing the current chess position.
@@ -233,7 +233,7 @@ end
 """
     make_move(board::Board, m::Move)
 
-Return a **new board** with the move `m` applied, leaving the original `board` unchanged.
+Return a new board with the move `m` applied, leaving the original `board` unchanged.
 Updates castling rights, en passant square, halfmove clock, and internal evaluation.
 
 - `board`: a `Board` struct representing the current chess position.
@@ -256,10 +256,10 @@ end
 """
     apply_moves!(board::Board, moves::AbstractString...)
 
-Apply a sequence of moves in **long algebraic notation (LAN)** to `board` **in-place**.
+Apply a sequence of moves in long algebraic notation (LAN) to `board` in-place.
 Only legal moves are allowed; an error is thrown if any move is illegal.
 
-Since this function modifies `board` in-place, all moves **up to the first illegal move** are applied.
+Since this function modifies `board` in-place, all moves up to the first illegal move are applied.
 The board will reflect these moves even if a subsequent move is illegal.
 
 - `board`: a `Board` struct representing the current chess position.
@@ -286,7 +286,7 @@ end
 """
     apply_moves(board::Board, moves::AbstractString...) -> Board
 
-Return a **new board** with a sequence of moves in **long algebraic notation (LAN)** applied.
+Return a new board with a sequence of moves in long algebraic notation (LAN) applied.
 The original `board` is left unchanged. Only legal moves are allowed; an error is thrown if any move is illegal.
 
 - `board`: a `Board` struct representing the current chess position.
