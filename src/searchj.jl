@@ -214,7 +214,8 @@ function tt_store(
     end
 end
 
-# Quiescence search: only searches captures
+# Quiescence search: searches captures, or (while in check) all legal
+# evasions.
 const MAX_QUIESCENCE_PLY = 4
 const moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(MAX_QUIESCENCE_PLY)]
 const pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(MAX_QUIESCENCE_PLY)]
@@ -224,37 +225,56 @@ function quiescence(board::Board, α::Int, β::Int;
 )
     NODE_COUNT[] += 1
     side_to_move = board.side_to_move
-    static_eval = evaluate(board)  # evaluation if we stop here
+    own_in_check = in_check(board, side_to_move)
 
-    if side_to_move == WHITE
-        # White wants to maximize score
-        if static_eval >= β
-            return β   # beta cutoff
+    if own_in_check
+        if ply >= MAX_QUIESCENCE_PLY
+            return evaluate(board)
         end
-        if static_eval > α
-            α = static_eval
+
+        local_moves = moves_stack[ply + 1]      # safe per-ply buffer
+        local_pseudo = pseudo_stack[ply + 1]
+
+        n_moves = generate_legal_moves!(board, local_moves, local_pseudo)
+
+        if n_moves == 0
+            return side_to_move == WHITE ? -MATE_VALUE + ply : MATE_VALUE - ply
         end
+
+        best_score = side_to_move == WHITE ? -MATE_VALUE : MATE_VALUE
     else
-        # Black wants to minimize score
-        if static_eval <= α
-            return α   # alpha cutoff
+        static_eval = evaluate(board)  # evaluation if we stop here
+
+        if side_to_move == WHITE
+            # White wants to maximize score
+            if static_eval >= β
+                return β   # beta cutoff
+            end
+            if static_eval > α
+                α = static_eval
+            end
+        else
+            # Black wants to minimize score
+            if static_eval <= α
+                return α   # alpha cutoff
+            end
+            if static_eval < β
+                β = static_eval
+            end
         end
-        if static_eval < β
-            β = static_eval
+
+        # Prevent runaway recursion in capture sequences
+        if ply >= MAX_QUIESCENCE_PLY
+            return static_eval
         end
+
+        best_score = static_eval
+
+        local_moves = moves_stack[ply + 1]      # safe per-ply buffer
+        local_pseudo = pseudo_stack[ply + 1]
+
+        n_moves = generate_captures!(board, local_moves, local_pseudo)
     end
-
-    # Prevent runaway recursion in capture sequences
-    if ply >= MAX_QUIESCENCE_PLY
-        return static_eval
-    end
-
-    best_score = static_eval
-
-    local_moves = moves_stack[ply + 1]      # safe per-ply buffer
-    local_pseudo = pseudo_stack[ply + 1]
-
-    n_moves = generate_captures!(board, local_moves, local_pseudo)
 
     @inbounds for i in 1:n_moves
         move = local_moves[i]

@@ -138,6 +138,40 @@ end
     @test move === OrbisChessEngine.NO_MOVE
 end
 
+@testset "Quiescence returns mate score instead of static eval when in check with no captures (regression)" begin
+    b = Board(fen = "4k3/3PP3/4K3/8/8/8/8/8 b - - 0 1")
+    @test OrbisChessEngine.in_check(b, BLACK)
+    @test isempty(generate_legal_moves(b))
+
+    score = OrbisChessEngine.quiescence(
+        b, -OrbisChessEngine.MATE_VALUE, OrbisChessEngine.MATE_VALUE)
+    @test score == OrbisChessEngine.MATE_VALUE  # Black is mated; score is from White's POV
+end
+
+@testset "Quiescence searches non-capturing check evasions instead of standing pat (regression)" begin
+    # White king in check along the e-file from a lone black queen, with no
+    # blocking piece and nothing that can capture the queen -- the only
+    # legal replies are king moves (all non-captures). Before the fix,
+    # quiescence's captures-only move generation found 0 moves here and
+    # returned evaluate(board) directly, without trying any king move.
+    b = Board(fen = "k3q3/8/8/8/8/8/8/4K3 w - - 0 1")
+    @test OrbisChessEngine.in_check(b, WHITE)
+
+    legal = generate_legal_moves(b)
+    @test length(legal) > 0
+    @test all(m -> m.capture == 0, legal)  # no legal captures available
+
+    expected = maximum(legal) do m
+        child = deepcopy(b)
+        make_move!(child, m)
+        evaluate(child)
+    end
+
+    score = OrbisChessEngine.quiescence(
+        b, -OrbisChessEngine.MATE_VALUE, OrbisChessEngine.MATE_VALUE)
+    @test score == expected
+end
+
 @testset "TT mate scores are re-anchored by ply, not reused as-is" begin
     OrbisChessEngine.tt_clear!()
     h = UInt64(0xdead_beef)
