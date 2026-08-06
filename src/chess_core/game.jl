@@ -96,8 +96,6 @@ function engine_move!(
     opening_book::Union{Nothing,PolyglotBook} = KOMODO_OPENING_BOOK,
     verbose = false,
 )
-    tt_clear!()  # reset TT for this search
-
     start_time = time_ns() ÷ 1_000_000
     result = search_with_time(game; opening_book = opening_book, verbose = verbose)
     elapsed = (time_ns() ÷ 1_000_000) - start_time

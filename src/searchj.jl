@@ -967,7 +967,6 @@ function search(
     time_budget::Int = typemax(Int),
     max_time_budget::Int = time_budget,
 )
-    tt_clear!()  # reset TT for this search
     NODE_COUNT[] = 0
     now = time_ns() ÷ 1_000_000
     opt_stop_time = Int(now + min(time_budget, 1_000_000_000))  # cap to 1e9 ms ~ 11 days
