@@ -1,25 +1,27 @@
 # CHANGELOG
 
-## Unreleased
+## [0.3.1] - 2026-08-06
 
 ### New features
 
-- Added a history heuristic to move ordering.
-- Added Principal Variation Search (PVS) and Late Move Reductions (LMR) to the search.
-- Added reverse futility pruning and futility pruning, cutting unpromising nodes/moves at shallow search depth.
-- Added mobility and king-safety terms to the evaluation function.
-- Replaced the flat 1-ply Late Move Reduction with a formula scaling the reduction by both remaining depth and how late the move is in the ordered move list.
-- Added Static Exchange Evaluation (SEE): capture ordering now uses true exchange value instead of MVV-LVA, and quiescence search skips captures with provably negative SEE instead of searching them.
-- Added a working UCI implementation (`run_uci()`, launched via `julia --project=. bin/orbis_uci.jl`), supporting `position` and `go` with `depth`, `movetime`, and `wtime`/`btime` time control. `go infinite`/`stop` don't yet interrupt an in-progress search.
+- Added a minimal working UCI implementation `run_uci()`, for playing vs other engines.
 - Added a MakieExtension: `plot` now renders a `Makie.Figure` when a Makie backend plus `FileIO` and `Images` are loaded, and falls back to the terminal renderer otherwise.
+- Engine improvements:
+    - Added a history heuristic to move ordering.
+    - Added Principal Variation Search (PVS) and Late Move Reductions (LMR) to the search.
+    - Added reverse futility pruning and futility pruning, cutting unpromising nodes/moves at shallow search depth.
+    - Added mobility and king-safety terms to the evaluation function.
+    - Improve Late Move Reduction.
+    - Added Static Exchange Evaluation.
 
 ### Bug fixes
 
-- Fixed `Move(board, str)` always inferring the *black* promotion piece regardless of which side was actually promoting.
-- Fixed a dead condition in move ordering's check bonus that meant it never actually applied.
-- Fixed mate scores in the transposition table not being adjusted by ply, which could corrupt search scores via transposition; null-move pruning, previously disabled because of this, is re-enabled.
-- Fixed `search`/`search_root` returning no move at all (rather than any legal move) when asked to move from a position that's already a draw by insufficient material, threefold repetition, or the fifty-move rule.
-- Fixed quiescence search never checking whether the side to move was in check.
+- Fixed `Move(board, str)` always inferring the black promotion piece regardless of which side was actually promoting.
+- Engine fixes:
+    - Fixed move ordering's check bonus.
+    - Fixed transposition table bug.
+    - Fixed `search`/`search_root` returning no move at all (rather than any legal move) when asked to move from a position that's already a draw by insufficient material, threefold repetition, or the fifty-move rule.
+    - Fixed quiescence search never checking whether the side to move was in check.
 
 ## [0.3.0] - 2026-05-07
 
