@@ -9,40 +9,55 @@ UCI engine from a GUI or a tool like `cutechess-cli` instead, see the
 
 First we load the package:
 
-```julia
+```@example quickguide
 using OrbisChessEngine
 ```
 
 We can create a starting position using:
 
-```julia
+```@example quickguide
 board = Board()
 ```
 
 or load a game from a FEN string:
 
-```julia
+```@example quickguide
 board = Board(fen="rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 ```
 
-This is a struct of type `Board` which contains the relevant information about the chess position needed for playing and searching.
+This is a struct of type `Board` which contains the relevant information about the chess position needed for playing and searching. It provides a simple ASCII `show` method, but you can use `plot` instead, as shown below.
+
+### Graphical rendering
 
 To view the board we can use `plot()`:
 
-```julia
+```@example quickguide
 plot(board)
 ```
 
-`plot` prints a colored board to the terminal by default. If a Makie backend (e.g.
-`CairoMakie`) plus `FileIO` and `Images` are loaded first, it returns a graphical
-`Figure` instead.
+`plot` prints a colored board to the terminal by default, using a dark theme. If your editor/terminal
+uses a light theme, switch the board to match by setting the `"theme"` preference (via
+[Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl)) to `"light"`:
 
-If using a light theme editor, you might want to set your preferences to use light theme for the chess board.
+```julia
+using Preferences
+set_preferences!(OrbisChessEngine, "theme" => "light")
+```
+
+If a Makie backend (e.g. `CairoMakie`) plus `FileIO` and `Images` are loaded, `plot`
+returns a graphical `Figure` instead.
+
+```@example quickguide
+import CairoMakie, FileIO, Images
+plot(board)
+```
+
+## Making Moves
 
 We can use `Move` to create a move. Several formats are supported, but the simplest is
 to use the long algebraic notation:
 
-```julia
+```@example quickguide
 mv = Move(board, "e2e4")
 ```
 
@@ -50,25 +65,25 @@ The advantage of the move format used above, is that you don't have to specify c
 
 We can make a move using by `make_move()` or the in-place version `make_move!()`:
 
-```julia
+```@example quickguide
 make_move!(board, mv)
 ```
 
 We can undo a move using `undo_move()` or the in-place version `undo_move!()`:
 
-```julia
+```@example quickguide
 undo_move!(board, mv)
 ```
 
 Note that `make_move()` (and the in-place version `make_move!()`) does **not** check legality, so it is possible to make illegal moves. To ensure moves are legal, you can use `apply_moves()` (or the in-place version `apply_moves!()`), which will throw an error if any move is illegal.
 
-```julia
+```@example quickguide
 apply_moves!(board, "e2e4", "e7e5", "g1f3", "b8c6", "f1b5")
 ```
 
 You can check the game status using `game_status()`:
 
-```julia
+```@example quickguide
 game_status(board)
 ```
 
@@ -76,7 +91,7 @@ game_status(board)
 
 To generate a move using the engine we can use `search()`:
 
-```julia
+```@example quickguide
 result = search(board; depth = 3, opening_book = nothing)
 ```
 
@@ -84,13 +99,13 @@ result = search(board; depth = 3, opening_book = nothing)
 
 To make a 3+2 game we can use `Game()`:
 
-```julia
+```@example quickguide
 game = Game(; minutes = 3, increment = 2)
 ```
 
 or the short-hand notation:
 
-```julia
+```@example quickguide
 game = Game("3+2")
 ```
 
@@ -98,7 +113,7 @@ This is a struct of type `Game` which contains the board, white and black time l
 
 The engine will then automatically allocate how much time to use for each move. To let the engine make a move in a timed game we can use `engine_move!()`:
 
-```julia
+```@example quickguide
 engine_move!(game)
 ```
 
@@ -106,18 +121,18 @@ Combining everything we can let the engine play against itself in a 1+1 game aga
 
 ```julia
 game = Game("1+1")
-bords = [deepcopy(game.board)]
+boards = [deepcopy(game.board)]
 while game_status(game.board) == :ongoing
     engine_move!(game)
-    push!(bords, deepcopy(game.board))
+    push!(boards, deepcopy(game.board))
 end
 ```
 
 And view the game:
 
 ```julia
-for i in eachindex(bords)
+for i in eachindex(boards)
     sleep(0.5)
-    plot(bords[i])
+    plot(boards[i])
 end
 ```

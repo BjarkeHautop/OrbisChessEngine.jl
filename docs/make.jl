@@ -15,7 +15,8 @@ makedocs(;
     repo = "https://github.com/BjarkeHautop/OrbisChessEngine.jl/blob/{commit}{path}#{line}",
     sitename = "OrbisChessEngine.jl",
     format = Documenter.HTML(;
-        canonical = "https://BjarkeHautop.github.io/OrbisChessEngine.jl"),
+        canonical = "https://BjarkeHautop.github.io/OrbisChessEngine.jl",
+        example_size_threshold = nothing),
     pages = ["index.md"; numbered_pages]
 )
 
