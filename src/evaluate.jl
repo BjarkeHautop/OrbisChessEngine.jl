@@ -233,12 +233,7 @@ function compute_eval_and_phase(board::Board)
     game_phase_value = 0
 
     for (piece, bb) in enumerate(board.bitboards)
-        while bb != 0
-            sq = trailing_zeros(bb)
-            bb &= bb - 1
-
-            game_phase_value += phase_weight(piece)
-        end
+        game_phase_value += phase_weight(piece) * count_ones(bb)
     end
 
     # Now compute evaluation using that phase

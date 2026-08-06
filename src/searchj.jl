@@ -621,7 +621,7 @@ function extract_root_pv(board::Board, root_move::Move, max_depth::Int)
 
     for _ in 2:max_depth
         h = zobrist_hash(temp_board)
-        val, move, hit = tt_probe_raw(h)
+        _, move, hit = tt_probe_raw(h)
         if !hit || move === NO_MOVE
             break
         end

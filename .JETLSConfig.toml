@@ -1,0 +1,15 @@
+# JETLS (jetls) configuration.
+# Schema: `jetls schema --config-toml`
+
+# Suppress the false-positive macro-expansion error from `@load_preference`.
+# JETLS expands `Preferences.@load_preference` while analyzing `src/ui.jl`
+# outside a real package-load context, so the macro raises
+# "Module Main does not correspond to a loaded package!". This works fine when
+# OrbisChessEngine is actually loaded as a package. Matched by message text
+# (not the whole `lowering/macro-expansion-error` code) so genuine macro errors
+# from other macros are still reported.
+[[diagnostic.patterns]]
+match_by = "message"
+match_type = "regex"
+pattern = "does not correspond to a loaded package"
+severity = "off"

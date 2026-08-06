@@ -98,7 +98,6 @@ end
 Return the piece constant corresponding to promotion symbol `c` and the moving side (`WHITE` or `BLACK`).
 """
 function piece_from_symbol(c::AbstractChar, side::Side)
-    piece = nothing
     if c == 'Q'
         piece = side == WHITE ? Piece.W_QUEEN : Piece.B_QUEEN
     elseif c == 'R'

@@ -104,7 +104,6 @@ end
 
 function handle_position(command::String)
     tokens = split(command)
-    board = nothing
 
     if tokens[2] == "startpos"
         board = Board()  # initialize starting position
