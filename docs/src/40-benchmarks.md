@@ -35,8 +35,8 @@ by playing it against [Stockfish](https://stockfishchess.org/) at reduced streng
 (via the `UCI_LimitStrength`/`UCI_Elo` options), using
 [cutechess-cli](https://github.com/cutechess/cutechess) as the match manager.
 
-Based on 40 games vs Stockfish 1800 ELO it scored 13/40 giving an estimate
-of 1692.5 ± 114.7 ELO.
+Based on 40 games vs Stockfish 1800 Elo 1s/move it scored 21-17-2 (W/L/D) giving an estimate
+of 1834.9 ± 108.8 Elo.
 
 ### Steps to Reproduce
 
@@ -49,7 +49,7 @@ of 1692.5 ± 114.7 ELO.
      -engine name=Orbis cmd=julia arg="--project=." arg="bin/orbis_uci.jl" dir=. proto=uci \
      -engine name=Stockfish cmd=stockfish proto=uci option.UCI_LimitStrength=true option.UCI_Elo=1800 \
      -each st=1 timemargin=500 \
-     -rounds 40 -repeat \
+     -rounds 40 \
      -concurrency 5 \
      -pgnout results.pgn
    ```
