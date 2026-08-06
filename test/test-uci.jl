@@ -19,7 +19,7 @@ using OrbisChessEngine
     @test occursin(r"OrbisChessEngine \d+\.\d+\.\d+(?:-DEV)?", lines[1])
 
     # Line 2: check author
-    @test occursin("Bjarke Hautop", lines[2])
+    @test occursin("Bjarke Hautop Kristensen", lines[2])
 
     # Line 3: check uciok
     @test occursin("uciok", lines[3])

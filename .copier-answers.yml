@@ -18,7 +18,7 @@ AddPrecommit: true
 AddTagBotCI: true
 AddTestCI: true
 AddWinToCI: false
-Authors: Bjarke Hautop <bjarke.hautop@gmail.com> and contributors
+Authors: Bjarke Hautop Kristensen <bjarke.hautop@gmail.com> and contributors
 AutoIncludeTests: true
 CheckExplicitImports: false
 ConfigIndentation: 2
@@ -26,7 +26,7 @@ JuliaIndentation: 4
 JuliaMinCIVersion: '1.10'
 JuliaMinVersion: '1.6'
 License: MIT
-LicenseCopyrightHolders: Bjarke Hautop
+LicenseCopyrightHolders: Bjarke Hautop Kristensen
 MarkdownIndentation: 2
 PackageName: OrbisChessEngine
 PackageOwner: BjarkeHautop
