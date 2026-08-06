@@ -11,7 +11,7 @@ using Test
         Move(OrbisChessEngine.square_index(6, 2), OrbisChessEngine.square_index(6, 3)),  # f2 to f3
         Move(OrbisChessEngine.square_index(5, 7), OrbisChessEngine.square_index(5, 5)),  # e7 to e5
         Move(OrbisChessEngine.square_index(7, 2), OrbisChessEngine.square_index(7, 4)),  # g2 to g4
-        Move(OrbisChessEngine.square_index(4, 8), OrbisChessEngine.square_index(8, 4))  # d8 to h4 (checkmate)
+        Move(OrbisChessEngine.square_index(4, 8), OrbisChessEngine.square_index(8, 4)),  # d8 to h4 (checkmate)
     ]
 
     for m in moves
@@ -40,9 +40,9 @@ using Test
         Move(OrbisChessEngine.square_index(2, 1), OrbisChessEngine.square_index(3, 3)),  # b1 to c3
         Move(OrbisChessEngine.square_index(7, 8), OrbisChessEngine.square_index(6, 6)),  # g8 to f6
         Move(OrbisChessEngine.square_index(3, 3), OrbisChessEngine.square_index(2, 1)),  # c3 to b1
-        Move(OrbisChessEngine.square_index(6, 6), OrbisChessEngine.square_index(7, 8))  # f6 to g8
+        Move(OrbisChessEngine.square_index(6, 6), OrbisChessEngine.square_index(7, 8)),  # f6 to g8
     ]
-    for i in 1:3
+    for i = 1:3
         for m in moves
             make_move!(b, m)
         end
@@ -68,10 +68,7 @@ using Test
     b.side_to_move = WHITE
 
     # Now make the 99th and 100th halfmove
-    moves = [
-        Move(b, "g1f3"),
-        Move(b, "g8f6")
-    ]
+    moves = [Move(b, "g1f3"), Move(b, "g8f6")]
     for m in moves
         make_move!(b, m)
     end

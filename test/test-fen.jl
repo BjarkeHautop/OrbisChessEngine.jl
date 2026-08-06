@@ -10,16 +10,24 @@ end
 
 @testset "FEN errors on invalid string" begin
     # Test 1: FEN with fewer than 8 ranks
-    @test_throws AssertionError Board(fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP w KQkq - 0 1")
+    @test_throws AssertionError Board(
+        fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP w KQkq - 0 1",
+    )
 
     # Test 2: Rank with wrong number of squares
-    @test_throws AssertionError Board(fen = "rnbqkbnr/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    @test_throws AssertionError Board(
+        fen = "rnbqkbnr/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    )
 
     # Test 3: FEN with fewer than 4 fields
-    @test_throws AssertionError Board(fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq")
+    @test_throws AssertionError Board(
+        fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq",
+    )
 
     # Test 4: Rank with too many squares (e.g., 9 squares)
-    @test_throws AssertionError Board(fen = "rnbqkbnr/pppppppp/9/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    @test_throws AssertionError Board(
+        fen = "rnbqkbnr/pppppppp/9/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+    )
 end
 
 @testset "FEN en passant" begin

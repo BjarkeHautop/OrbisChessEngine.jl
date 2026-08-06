@@ -11,14 +11,17 @@ using Test
     @test king_attackers == 0
 
     # Occupying all 8 target squares with "own" pieces removes all mobility.
-    own_occ = OrbisChessEngine.knight_attack_masks[e5 + 1]
+    own_occ = OrbisChessEngine.knight_attack_masks[e5+1]
     mobility2, _ = OrbisChessEngine.knight_term(knight_bb, own_occ, UInt64(0))
     @test mobility2 == 0
 
     # An "enemy king zone" equal to the knight's own attack set is detected
     # as one attacker.
     _, king_attackers2 = OrbisChessEngine.knight_term(
-        knight_bb, UInt64(0), OrbisChessEngine.knight_attack_masks[e5 + 1])
+        knight_bb,
+        UInt64(0),
+        OrbisChessEngine.knight_attack_masks[e5+1],
+    )
     @test king_attackers2 == 1
 end
 

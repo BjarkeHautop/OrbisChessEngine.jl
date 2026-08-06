@@ -35,7 +35,7 @@ julia --project=docs docs/make.jl
 ```
 
 Linting/formatting/link-checking also runs via `pre-commit` (see `.pre-commit-config.yaml`) and is
-enforced in CI (`.github/workflows/Lint.yml`); Julia code style is `sciml` (`.JuliaFormatter.toml`).
+enforced in CI (`.github/workflows/Lint.yml`);
 `test/test-aqua.jl` runs `Aqua.test_all` (ambiguities, undefined exports, stale deps, etc.) as part
 of the normal test suite.
 

@@ -17,19 +17,13 @@ perft(board, 5)
 ```
 """
 function perft(board::Board, depth::Int)
-    moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
-    pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
+    moves_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
+    pseudo_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
 
     return _perft!(board, depth, moves_stack, pseudo_stack, 1)
 end
 
-function _perft!(
-        board::Board,
-        depth::Int,
-        moves_stack,
-        pseudo_stack,
-        level::Int
-)
+function _perft!(board::Board, depth::Int, moves_stack, pseudo_stack, level::Int)
     if depth == 0
         return 1
     end
@@ -41,7 +35,7 @@ function _perft!(
     n_moves = generate_legal_moves!(board, moves, pseudo)
 
     # 3% faster with @inbounds here
-    @inbounds for i in 1:n_moves
+    @inbounds for i = 1:n_moves
         move = moves[i]
         make_move!(board, move)
         nodes += _perft!(board, depth - 1, moves_stack, pseudo_stack, level + 1)
@@ -55,13 +49,13 @@ using Base.Threads
 
 function split_indices(nmoves, nthreads)
     chunk_sizes = fill(div(nmoves, nthreads), nthreads)
-    for i in 1:rem(nmoves, nthreads)
+    for i = 1:rem(nmoves, nthreads)
         chunk_sizes[i] += 1
     end
 
     chunks = Vector{UnitRange{Int}}(undef, nthreads)
     start = 1
-    for i in 1:nthreads
+    for i = 1:nthreads
         stop = start + chunk_sizes[i] - 1
         chunks[i] = start:stop
         start = stop + 1
@@ -89,8 +83,8 @@ function perft_fast(board::Board, depth::Int)
         return 1
     end
 
-    moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
-    pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
+    moves_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
+    pseudo_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
 
     root_moves = moves_stack[1]
     root_pseudo = pseudo_stack[1]
@@ -100,19 +94,24 @@ function perft_fast(board::Board, depth::Int)
     chunks = split_indices(n_moves, nthreads_)
 
     futures = Vector{Task}(undef, nthreads_)
-    for t in 1:nthreads_
+    for t = 1:nthreads_
         range = chunks[t]
         futures[t] = Threads.@spawn begin
             local_board = deepcopy(board)  # thread-local board
-            local_moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
-            local_pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
+            local_moves_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
+            local_pseudo_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
 
             nodes = 0
             for i in range
                 move = root_moves[i]
                 make_move!(local_board, move)
                 nodes += _perft!(
-                    local_board, depth - 1, local_moves_stack, local_pseudo_stack, 2)
+                    local_board,
+                    depth - 1,
+                    local_moves_stack,
+                    local_pseudo_stack,
+                    2,
+                )
                 undo_move!(local_board, move)
             end
             return nodes
@@ -123,18 +122,18 @@ function perft_fast(board::Board, depth::Int)
 end
 
 function perft_bishop_magic(board::Board, depth::Int)
-    moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
-    pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(depth + 1)]
+    moves_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
+    pseudo_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(depth+1)]
 
     return _perft_bishop_magic!(board, depth, moves_stack, pseudo_stack, 1)
 end
 
 function _perft_bishop_magic!(
-        board::Board,
-        depth::Int,
-        moves_stack,
-        pseudo_stack,
-        level::Int
+    board::Board,
+    depth::Int,
+    moves_stack,
+    pseudo_stack,
+    level::Int,
 )
     if depth == 0
         return 1
@@ -146,11 +145,11 @@ function _perft_bishop_magic!(
 
     n_moves = generate_legal_moves_bishop_magic!(board, moves, pseudo)
 
-    @inbounds for i in 1:n_moves
+    @inbounds for i = 1:n_moves
         move = moves[i]
         make_move!(board, move)
-        nodes += _perft_bishop_magic!(
-            board, depth - 1, moves_stack, pseudo_stack, level + 1)
+        nodes +=
+            _perft_bishop_magic!(board, depth - 1, moves_stack, pseudo_stack, level + 1)
         undo_move!(board, move)
     end
 

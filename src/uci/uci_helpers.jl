@@ -43,7 +43,8 @@ function find_uci_move(board::Board, uci_str::AbstractString)
         if promotion_char === nothing
             m.promotion == 0 && return m
         else
-            m.promotion != 0 && piece_symbol(m.promotion) == string(promotion_char) &&
+            m.promotion != 0 &&
+                piece_symbol(m.promotion) == string(promotion_char) &&
                 return m
         end
     end
@@ -74,13 +75,7 @@ function id()
 end
 
 function handle_uci_command()
-    # 1. Print engine identification
-    id()  # prints name, version, author
-
-    # 2. Print engine options
-    # (none for now)
-
-    # 3. Signal that UCI mode is ready
+    id()
     println("uciok")
 end
 
@@ -111,7 +106,7 @@ function handle_position(command::String)
     elseif tokens[2] == "fen"
         # collect FEN tokens (until "moves" or end of line)
         moves_index = findfirst(isequal("moves"), tokens)
-        fen_tokens = moves_index === nothing ? tokens[3:end] : tokens[3:(moves_index - 1)]
+        fen_tokens = moves_index === nothing ? tokens[3:end] : tokens[3:(moves_index-1)]
         fen_string = join(fen_tokens, " ")
         board = Board(fen = fen_string)
     else
@@ -119,7 +114,7 @@ function handle_position(command::String)
     end
 
     if moves_index !== nothing
-        for mv_str in tokens[(moves_index + 1):end]
+        for mv_str in tokens[(moves_index+1):end]
             make_move!(board, find_uci_move(board, mv_str))
         end
     end
@@ -129,7 +124,7 @@ end
 
 function handle_go(command::String, board)
     tokens = split(command)  # split by space
-    search_params = Dict{String, Any}()
+    search_params = Dict{String,Any}()
 
     i = 2  # skip "go"
     while i <= length(tokens)
@@ -149,51 +144,37 @@ function handle_go(command::String, board)
                 end
             end
             search_params["searchmoves"] = moves
-            # All times are in milliseconds
         elseif token == "wtime"
             i += 1
             search_params["wtime"] = parse(Int, tokens[i])
         elseif token == "btime"
             i += 1
             search_params["btime"] = parse(Int, tokens[i])
-            # Currently only have shared increment in Game struct
         elseif token == "winc"
             i += 1
             search_params["winc"] = parse(Int, tokens[i])
         elseif token == "binc"
             i += 1
             search_params["binc"] = parse(Int, tokens[i])
-            # Number of moves until next time control
         elseif token == "movestogo"
             i += 1
             search_params["movestogo"] = parse(Int, tokens[i])
-            # Depth to search
         elseif token == "depth"
             i += 1
             search_params["depth"] = parse(Int, tokens[i])
-            # Number of nodes (positions) to search
         elseif token == "nodes"
             i += 1
             search_params["nodes"] = parse(Int, tokens[i])
-            # Search for mate in x moves
-            # Not implemented yet
-        elseif token == "mate"
+        elseif token == "mate"  # not implemented
             i += 1
             search_params["mate"] = parse(Int, tokens[i])
-            # Search for exactly this much time
-            # Not implemented yet
         elseif token == "movetime"
             i += 1
             search_params["movetime"] = parse(Int, tokens[i])
-            # Search until stopped
         elseif token == "infinite"
             search_params["infinite"] = true
-            # Pondering mode
-            # Not implemented yet
-        elseif token == "ponder"
+        elseif token == "ponder"  # not implemented
             search_params["ponder"] = true
-        else
-            # unknown token, skip
         end
         i += 1
     end
@@ -211,10 +192,12 @@ function handle_go(command::String, board)
         time_budget = movetime
         max_time_budget = time_budget
     elseif has_time_control
-        remaining = board.side_to_move == WHITE ? get(search_params, "wtime", 0) :
-                    get(search_params, "btime", 0)
-        increment = board.side_to_move == WHITE ? get(search_params, "winc", 0) :
-                    get(search_params, "binc", 0)
+        remaining =
+            board.side_to_move == WHITE ? get(search_params, "wtime", 0) :
+            get(search_params, "btime", 0)
+        increment =
+            board.side_to_move == WHITE ? get(search_params, "winc", 0) :
+            get(search_params, "binc", 0)
         movestogo = get(search_params, "movestogo", nothing)
         time_budget, max_time_budget = time_management(remaining, increment, movestogo)
         search_depth = 64
@@ -226,8 +209,13 @@ function handle_go(command::String, board)
         max_time_budget = time_budget
     end
 
-    result = search(board; depth = search_depth, time_budget = time_budget,
-        max_time_budget = max_time_budget, uci_info = true)
+    result = search(
+        board;
+        depth = search_depth,
+        time_budget = time_budget,
+        max_time_budget = max_time_budget,
+        uci_info = true,
+    )
     println(result === nothing ? "bestmove 0000" : "bestmove $(to_uci(result.move))")
 end
 
@@ -237,9 +225,7 @@ function handle_stop()
 end
 
 function handle_ponderhit()
-    # The user has played the expected move. This will be sent if the engine was told to ponder on the same move
-    # the user has played. The engine should continue searching but switch from pondering to normal search.
-    # No-op: pondering isn't implemented, so there is nothing to switch over.
+    # No-op: pondering isn't implemented.
 end
 
 function handle_quit()

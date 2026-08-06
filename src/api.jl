@@ -34,10 +34,7 @@ g3 = Game(fen="8/8/8/8/8/8/8/K6k w - - 0 1")  # starting from custom FEN
 ```
 """
 function Game(; minutes = 3, increment = 2, fen::String = START_FEN)
-    Game(Board(fen = fen),
-        minutes * 60 * 1000,
-        minutes * 60 * 1000,
-        increment * 1000)
+    Game(Board(fen = fen), minutes * 60 * 1000, minutes * 60 * 1000, increment * 1000)
 end
 
 """
@@ -181,8 +178,10 @@ function Move(board::Board, str::AbstractString)
 
     # --- Infer moving piece ---
     moving_piece = 0
-    for p in (board.side_to_move == WHITE ? ((Piece.W_PAWN):(Piece.W_KING)) :
-              ((Piece.B_PAWN):(Piece.B_KING)))
+    for p in (
+        board.side_to_move == WHITE ? ((Piece.W_PAWN):(Piece.W_KING)) :
+        ((Piece.B_PAWN):(Piece.B_KING))
+    )
         if testbit(board.bitboards[p], from)
             moving_piece = p
             break
@@ -201,6 +200,6 @@ function Move(board::Board, str::AbstractString)
         promotion,
         captured_piece,
         0,          # castling flag
-        is_ep
+        is_ep,
     )
 end

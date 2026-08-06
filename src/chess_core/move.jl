@@ -24,8 +24,7 @@ struct Move
 end
 
 # default constructor function
-function Move(
-        from, to; promotion = 0, capture = 0, castling = 0, en_passant = false)
+function Move(from, to; promotion = 0, capture = 0, castling = 0, en_passant = false)
     Move(from, to, promotion, capture, castling, en_passant)
 end
 
@@ -43,12 +42,12 @@ end
 
 # Extra constructor from algebraic strings
 function Move(
-        from_str::AbstractString,
-        to_str::AbstractString;
-        capture = 0,
-        promotion = 0,
-        castling = 0,
-        en_passant = false
+    from_str::AbstractString,
+    to_str::AbstractString;
+    capture = 0,
+    promotion = 0,
+    castling = 0,
+    en_passant = false,
 )
     from = square_from_name(from_str)
     to = square_from_name(to_str)
@@ -58,7 +57,7 @@ function Move(
         capture = capture,
         promotion = promotion,
         castling = castling,
-        en_passant = en_passant
+        en_passant = en_passant,
     )
 end
 

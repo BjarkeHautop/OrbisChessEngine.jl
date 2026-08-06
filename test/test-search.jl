@@ -144,7 +144,10 @@ end
     @test isempty(generate_legal_moves(b))
 
     score = OrbisChessEngine.quiescence(
-        b, -OrbisChessEngine.MATE_VALUE, OrbisChessEngine.MATE_VALUE)
+        b,
+        -OrbisChessEngine.MATE_VALUE,
+        OrbisChessEngine.MATE_VALUE,
+    )
     @test score == OrbisChessEngine.MATE_VALUE  # Black is mated; score is from White's POV
 end
 
@@ -168,7 +171,10 @@ end
     end
 
     score = OrbisChessEngine.quiescence(
-        b, -OrbisChessEngine.MATE_VALUE, OrbisChessEngine.MATE_VALUE)
+        b,
+        -OrbisChessEngine.MATE_VALUE,
+        OrbisChessEngine.MATE_VALUE,
+    )
     @test score == expected
 end
 
@@ -180,15 +186,25 @@ end
     remaining = 2   # plies from this position itself to checkmate
     stored_ply = 3  # ply of the node that stored it, in the search that found it
     OrbisChessEngine.tt_store(
-        h, OrbisChessEngine.MATE_VALUE - (stored_ply + remaining),
-        5, OrbisChessEngine.EXACT, mv, stored_ply)
+        h,
+        OrbisChessEngine.MATE_VALUE - (stored_ply + remaining),
+        5,
+        OrbisChessEngine.EXACT,
+        mv,
+        stored_ply,
+    )
 
     # Retrieved via transposition at different plies, in different (later)
     # searches: the position is still "mate in `remaining` plies from
     # itself", so the score must come back re-anchored to each new ply.
     for new_ply in (0, 7)
         val, move, hit = OrbisChessEngine.tt_probe(
-            h, 5, -OrbisChessEngine.MATE_VALUE, OrbisChessEngine.MATE_VALUE, new_ply)
+            h,
+            5,
+            -OrbisChessEngine.MATE_VALUE,
+            OrbisChessEngine.MATE_VALUE,
+            new_ply,
+        )
         @test hit
         @test val == OrbisChessEngine.MATE_VALUE - (new_ply + remaining)
         @test move == mv

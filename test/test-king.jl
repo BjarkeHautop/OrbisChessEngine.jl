@@ -6,9 +6,13 @@ using Test
 
     # Clear pieces between king and rook for castling
     b.bitboards[Piece.W_BISHOP] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_BISHOP], OrbisChessEngine.square_index(6, 1))
+        b.bitboards[Piece.W_BISHOP],
+        OrbisChessEngine.square_index(6, 1),
+    )
     b.bitboards[Piece.W_KNIGHT] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_KNIGHT], OrbisChessEngine.square_index(7, 1))
+        b.bitboards[Piece.W_KNIGHT],
+        OrbisChessEngine.square_index(7, 1),
+    )
 
     # Generate legal moves for white
     legal_moves = generate_legal_moves(b)
@@ -22,9 +26,13 @@ using Test
 
     # Verify king and rook positions after castling
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_KING], OrbisChessEngine.square_index(7, 1))  # King on g1
+        b.bitboards[Piece.W_KING],
+        OrbisChessEngine.square_index(7, 1),
+    )  # King on g1
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_ROOK], OrbisChessEngine.square_index(6, 1))  # Rook on f1
+        b.bitboards[Piece.W_ROOK],
+        OrbisChessEngine.square_index(6, 1),
+    )  # Rook on f1
 end
 
 @testset "King move generation" begin
@@ -32,19 +40,33 @@ end
 
     # Remove e2, f2 pawn, and pieces for castling
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(5, 2))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(5, 2),
+    )
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(6, 2))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(6, 2),
+    )
     b.bitboards[Piece.W_KNIGHT] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_KNIGHT], OrbisChessEngine.square_index(2, 1))
+        b.bitboards[Piece.W_KNIGHT],
+        OrbisChessEngine.square_index(2, 1),
+    )
     b.bitboards[Piece.W_BISHOP] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_BISHOP], OrbisChessEngine.square_index(3, 1))
+        b.bitboards[Piece.W_BISHOP],
+        OrbisChessEngine.square_index(3, 1),
+    )
     b.bitboards[Piece.W_QUEEN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_QUEEN], OrbisChessEngine.square_index(4, 1))
+        b.bitboards[Piece.W_QUEEN],
+        OrbisChessEngine.square_index(4, 1),
+    )
     b.bitboards[Piece.W_BISHOP] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_BISHOP], OrbisChessEngine.square_index(6, 1))
+        b.bitboards[Piece.W_BISHOP],
+        OrbisChessEngine.square_index(6, 1),
+    )
     b.bitboards[Piece.W_KNIGHT] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_KNIGHT], OrbisChessEngine.square_index(7, 1))
+        b.bitboards[Piece.W_KNIGHT],
+        OrbisChessEngine.square_index(7, 1),
+    )
 
     king_moves = OrbisChessEngine.generate_king_moves(b)
 
@@ -54,7 +76,7 @@ end
         Move("e1", "f2"),
         Move("e1", "g1"; castling = 1), # short castle
         Move("e1", "d1"),
-        Move("e1", "c1"; castling = 2)  # long castle
+        Move("e1", "c1"; castling = 2),  # long castle
     ]
 
     for em in expected_moves
@@ -63,7 +85,9 @@ end
 
     # Add a black rook attacking f1 to block short castling
     b.bitboards[Piece.B_ROOK] = OrbisChessEngine.setbit(
-        b.bitboards[Piece.B_ROOK], OrbisChessEngine.square_index(6, 4))  # f4 rook
+        b.bitboards[Piece.B_ROOK],
+        OrbisChessEngine.square_index(6, 4),
+    )  # f4 rook
     legal_moves = generate_legal_moves(b)
     # e1 → g1 (short castle) should no longer be allowed
     short_castle = Move("e1", "g1"; castling = 1)
@@ -78,9 +102,13 @@ end
 
     # Clear pieces between king and rook for castling
     b.bitboards[Piece.W_BISHOP] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_BISHOP], OrbisChessEngine.square_index(6, 1))
+        b.bitboards[Piece.W_BISHOP],
+        OrbisChessEngine.square_index(6, 1),
+    )
     b.bitboards[Piece.W_KNIGHT] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_KNIGHT], OrbisChessEngine.square_index(7, 1))
+        b.bitboards[Piece.W_KNIGHT],
+        OrbisChessEngine.square_index(7, 1),
+    )
 
     # Step 1: move king to f1
     m1 = Move("e1", "f1")
@@ -152,15 +180,23 @@ end
 
     make_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_KING], OrbisChessEngine.square_index(7, 1))  # King on g1
+        b.bitboards[Piece.W_KING],
+        OrbisChessEngine.square_index(7, 1),
+    )  # King on g1
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_ROOK], OrbisChessEngine.square_index(6, 1))  # Rook on f1
+        b.bitboards[Piece.W_ROOK],
+        OrbisChessEngine.square_index(6, 1),
+    )  # Rook on f1
 
     undo_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_KING], OrbisChessEngine.square_index(5, 1))  # King back on e1
+        b.bitboards[Piece.W_KING],
+        OrbisChessEngine.square_index(5, 1),
+    )  # King back on e1
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_ROOK], OrbisChessEngine.square_index(8, 1))  # Rook back on h1
+        b.bitboards[Piece.W_ROOK],
+        OrbisChessEngine.square_index(8, 1),
+    )  # Rook back on h1
 
     # White long
     mv = Move("e1", "c1"; castling = 2)
@@ -168,14 +204,22 @@ end
 
     make_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_KING], OrbisChessEngine.square_index(3, 1))  # King on c1
+        b.bitboards[Piece.W_KING],
+        OrbisChessEngine.square_index(3, 1),
+    )  # King on c1
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_ROOK], OrbisChessEngine.square_index(4, 1))  # Rook on d1
+        b.bitboards[Piece.W_ROOK],
+        OrbisChessEngine.square_index(4, 1),
+    )  # Rook on d1
     undo_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_KING], OrbisChessEngine.square_index(5, 1))  # King back on e1
+        b.bitboards[Piece.W_KING],
+        OrbisChessEngine.square_index(5, 1),
+    )  # King back on e1
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_ROOK], OrbisChessEngine.square_index(1, 1))  # Rook back on a1
+        b.bitboards[Piece.W_ROOK],
+        OrbisChessEngine.square_index(1, 1),
+    )  # Rook back on a1
 
     # Black long
     b.side_to_move = BLACK
@@ -184,15 +228,23 @@ end
 
     make_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_KING], OrbisChessEngine.square_index(3, 8))  # King on c8
+        b.bitboards[Piece.B_KING],
+        OrbisChessEngine.square_index(3, 8),
+    )  # King on c8
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_ROOK], OrbisChessEngine.square_index(4, 8))  # Rook on d8
+        b.bitboards[Piece.B_ROOK],
+        OrbisChessEngine.square_index(4, 8),
+    )  # Rook on d8
 
     undo_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_KING], OrbisChessEngine.square_index(5, 8))  # King back on e8
+        b.bitboards[Piece.B_KING],
+        OrbisChessEngine.square_index(5, 8),
+    )  # King back on e8
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_ROOK], OrbisChessEngine.square_index(1, 8))  # Rook back on a8
+        b.bitboards[Piece.B_ROOK],
+        OrbisChessEngine.square_index(1, 8),
+    )  # Rook back on a8
 
     # Black short
     mv = Move("e8", "g8"; castling = 1)
@@ -200,15 +252,23 @@ end
 
     make_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_KING], OrbisChessEngine.square_index(7, 8))  # King on g8
+        b.bitboards[Piece.B_KING],
+        OrbisChessEngine.square_index(7, 8),
+    )  # King on g8
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_ROOK], OrbisChessEngine.square_index(6, 8))  # Rook on f8
+        b.bitboards[Piece.B_ROOK],
+        OrbisChessEngine.square_index(6, 8),
+    )  # Rook on f8
 
     undo_move!(b, mv)
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_KING], OrbisChessEngine.square_index(5, 8))  # King back on e8
+        b.bitboards[Piece.B_KING],
+        OrbisChessEngine.square_index(5, 8),
+    )  # King back on e8
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_ROOK], OrbisChessEngine.square_index(8, 8))  # Rook back on h8
+        b.bitboards[Piece.B_ROOK],
+        OrbisChessEngine.square_index(8, 8),
+    )  # Rook back on h8
 end
 
 @testset "King attack masks" begin

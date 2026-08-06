@@ -21,7 +21,7 @@ Returns: Int (square index 0..63)
 """
 function king_square(board::Board, side::Side)
     bb = (side == WHITE) ? board.bitboards[Piece.W_KING] : board.bitboards[Piece.B_KING]
-    for sq in 0:63
+    for sq = 0:63
         if testbit(bb, sq)
             return sq
         end
@@ -81,25 +81,25 @@ Returns: Bool
 """
 function square_attacked(board::Board, sq, attacker::Side)::Bool
     # 1) Pawn attacks
-    pawns = attacker == WHITE ? board.bitboards[Piece.W_PAWN] :
-            board.bitboards[Piece.B_PAWN]
-    mask = attacker == WHITE ? pawn_attack_masks_white[sq + 1] :
-           pawn_attack_masks_black[sq + 1]
+    pawns =
+        attacker == WHITE ? board.bitboards[Piece.W_PAWN] : board.bitboards[Piece.B_PAWN]
+    mask = attacker == WHITE ? pawn_attack_masks_white[sq+1] : pawn_attack_masks_black[sq+1]
     if (pawns & mask) != 0
         return true
     end
 
     # --- 2) Knight attacks ---
-    knights = attacker == WHITE ? board.bitboards[Piece.W_KNIGHT] :
-              board.bitboards[Piece.B_KNIGHT]
-    if (knights & knight_attack_masks[sq + 1]) != 0
+    knights =
+        attacker == WHITE ? board.bitboards[Piece.W_KNIGHT] :
+        board.bitboards[Piece.B_KNIGHT]
+    if (knights & knight_attack_masks[sq+1]) != 0
         return true
     end
 
     # --- 3) King attacks ---
-    kings = attacker == WHITE ? board.bitboards[Piece.W_KING] :
-            board.bitboards[Piece.B_KING]
-    if (kings & king_attack_masks[sq + 1]) != 0
+    kings =
+        attacker == WHITE ? board.bitboards[Piece.W_KING] : board.bitboards[Piece.B_KING]
+    if (kings & king_attack_masks[sq+1]) != 0
         return true
     end
 
@@ -118,7 +118,7 @@ function square_attacked(board::Board, sq, attacker::Side)::Bool
             (board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_QUEEN])
         else
             (board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_QUEEN])
-        end
+        end,
     )
         return true
     end
@@ -132,7 +132,7 @@ function square_attacked(board::Board, sq, attacker::Side)::Bool
             (board.bitboards[Piece.W_ROOK] | board.bitboards[Piece.W_QUEEN])
         else
             (board.bitboards[Piece.B_ROOK] | board.bitboards[Piece.B_QUEEN])
-        end
+        end,
     )
         return true
     end
@@ -158,7 +158,7 @@ function generate_captures!(board::Board, moves, pseudo)
     n_moves = generate_legal_moves!(board, moves, pseudo)
 
     write_idx = 1
-    @inbounds for i in 1:n_moves
+    @inbounds for i = 1:n_moves
         m = moves[i]
         if m.capture != 0
             moves[write_idx] = m
@@ -171,7 +171,7 @@ end
 
 # helper to find which enemy piece occupies a square
 function find_capture_piece(board::Board, sq, start_piece, end_piece)
-    for p in start_piece:end_piece
+    for p = start_piece:end_piece
         if (board.bitboards[p] & (UInt64(1) << sq)) != 0
             return p
         end

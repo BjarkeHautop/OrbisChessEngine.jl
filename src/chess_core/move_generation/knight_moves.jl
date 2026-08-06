@@ -2,7 +2,7 @@
 const knight_attack_masks = Vector{UInt64}(undef, 64)
 
 function init_knight_masks!()
-    for sq in 0:63
+    for sq = 0:63
         mask = zero(UInt64)
         f, r = sq % 8, sq ÷ 8
         for df in (-2, -1, 1, 2)
@@ -15,7 +15,7 @@ function init_knight_masks!()
                 end
             end
         end
-        knight_attack_masks[sq + 1] = mask
+        knight_attack_masks[sq+1] = mask
     end
 end
 
@@ -27,21 +27,25 @@ function generate_knight_moves!(board::Board, moves, start_idx::Int)
 
     if board.side_to_move == WHITE
         knights = board.bitboards[Piece.W_KNIGHT]
-        friendly_mask = board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
-                        board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
-                        board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING]
-        enemy_mask = board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
-                     board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
-                     board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
+        friendly_mask =
+            board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
+            board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
+            board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING]
+        enemy_mask =
+            board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
+            board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
+            board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
         enemy_range = (Piece.B_PAWN):(Piece.B_KING)
     else
         knights = board.bitboards[Piece.B_KNIGHT]
-        friendly_mask = board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
-                        board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
-                        board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
-        enemy_mask = board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
-                     board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
-                     board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING]
+        friendly_mask =
+            board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
+            board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
+            board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
+        enemy_mask =
+            board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
+            board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
+            board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING]
         enemy_range = (Piece.W_PAWN):(Piece.W_KING)
     end
 
@@ -50,7 +54,7 @@ function generate_knight_moves!(board::Board, moves, start_idx::Int)
         sq = trailing_zeros(bb)
         bb &= bb - 1
 
-        attacks = knight_attack_masks[sq + 1] & ~friendly_mask
+        attacks = knight_attack_masks[sq+1] & ~friendly_mask
         attack_bb = attacks
         while attack_bb != 0
             to_sq = trailing_zeros(attack_bb)
@@ -78,5 +82,5 @@ function generate_knight_moves(board::Board)
     moves = Vector{Move}(undef, 64)  # Preallocate maximum possible moves
     start_idx = 1
     end_idx = generate_knight_moves!(board, moves, start_idx)
-    return moves[1:(end_idx - 1)]  # Return only the filled portion
+    return moves[1:(end_idx-1)]  # Return only the filled portion
 end

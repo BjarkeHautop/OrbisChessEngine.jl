@@ -79,7 +79,8 @@ end
     m = Move(b, "e2e4")
     new_b = make_move(b, m)
     make_move!(b, m)
-    @test OrbisChessEngine.piece_at(b, 28) == OrbisChessEngine.piece_at(new_b, 28) ==
+    @test OrbisChessEngine.piece_at(b, 28) ==
+          OrbisChessEngine.piece_at(new_b, 28) ==
           Piece.W_PAWN
     @test OrbisChessEngine.piece_at(b, 12) == OrbisChessEngine.piece_at(new_b, 12) == 0
 end

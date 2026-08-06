@@ -24,7 +24,7 @@ const Piece = (
     B_BISHOP = 9,
     B_ROOK = 10,
     B_QUEEN = 11,
-    B_KING = 12
+    B_KING = 12,
 )
 
 # Convenience: all piece types as a range
@@ -83,13 +83,13 @@ A chess board representation using bitboards.
 - `game_phase_value`: Cached phase numerator (sum of weights) for evaluation scaling.
 """
 mutable struct Board
-    bitboards::MVector{NUM_PIECES, UInt64} # piece type → bitboard
+    bitboards::MVector{NUM_PIECES,UInt64} # piece type → bitboard
     side_to_move::Side
     castling_rights::UInt8      # four bits: KQkq
     en_passant::Int8             # square index 0..63, or -1 if none
     halfmove_clock::UInt16          # for 50-move rule
-    position_history::MVector{MAX_MOVES_PER_GAME, UInt64}  # for threefold repetition
-    undo_stack::MVector{MAX_MOVES_PER_GAME, UndoInfo} # stack of UndoInfo for unmaking moves
+    position_history::MVector{MAX_MOVES_PER_GAME,UInt64}  # for threefold repetition
+    undo_stack::MVector{MAX_MOVES_PER_GAME,UndoInfo} # stack of UndoInfo for unmaking moves
     undo_index::Int16         # current index in undo_stack
     eval_score::Int32           # cached evaluation from White’s POV
     game_phase_value::UInt8     # cached phase numerator (sum of weights)
@@ -108,7 +108,7 @@ function Base.:(==)(a::Board, b::Board)
         return false
     end
 
-    for i in 1:(a.undo_index)
+    for i = 1:(a.undo_index)
         if a.undo_stack[i] != b.undo_stack[i]
             return false
         end

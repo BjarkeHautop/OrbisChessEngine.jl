@@ -39,7 +39,7 @@ end
         Move("b5", "b6"),
         Move("h6", "h5"),
         Move("b6", "b7"),
-        Move("b8", "c6")
+        Move("b8", "c6"),
     ]
 
     for m in moves
@@ -64,7 +64,7 @@ end
         Move("b5", "b6"),
         Move("h6", "h5"),
         Move("b6", "b7"),
-        Move("h5", "h4")
+        Move("h5", "h4"),
     ]
 
     for m in moves
@@ -83,9 +83,13 @@ end
     b = Board()
     # Clear squares between king and rook for kingside castling
     b.bitboards[Piece.W_KNIGHT] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_KNIGHT], OrbisChessEngine.square_index(7, 1))
+        b.bitboards[Piece.W_KNIGHT],
+        OrbisChessEngine.square_index(7, 1),
+    )
     b.bitboards[Piece.W_BISHOP] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_BISHOP], OrbisChessEngine.square_index(6, 1))
+        b.bitboards[Piece.W_BISHOP],
+        OrbisChessEngine.square_index(6, 1),
+    )
     m_castle = Move("e1", "g1"; castling = 1)  # kingside castle
     original_board = deepcopy(b)
     original_hash = OrbisChessEngine.zobrist_hash(b)

@@ -2,7 +2,7 @@ const pawn_attack_masks_white = Vector{UInt64}(undef, 64)
 const pawn_attack_masks_black = Vector{UInt64}(undef, 64)
 
 function init_pawn_masks!()
-    for sq in 0:63
+    for sq = 0:63
         mask_white = zero(UInt64)
         mask_black = zero(UInt64)
         f, r = sq % 8, sq ÷ 8
@@ -23,8 +23,8 @@ function init_pawn_masks!()
             end
         end
 
-        pawn_attack_masks_white[sq + 1] = mask_white
-        pawn_attack_masks_black[sq + 1] = mask_black
+        pawn_attack_masks_white[sq+1] = mask_white
+        pawn_attack_masks_black[sq+1] = mask_black
     end
 end
 
@@ -42,9 +42,10 @@ function generate_pawn_moves!(board::Board, moves, start_idx::Int)
     # Setup depending on side
     if board.side_to_move == WHITE
         pawns = board.bitboards[Piece.W_PAWN]
-        enemy_mask = board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
-                     board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
-                     board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
+        enemy_mask =
+            board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
+            board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
+            board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
         promo_rank_mask = UInt64(0xFF00000000000000)
         start_rank_mask = UInt64(0x000000000000FF00)
         direction = 8
@@ -54,9 +55,10 @@ function generate_pawn_moves!(board::Board, moves, start_idx::Int)
         ep_capture_piece = Piece.B_PAWN
     else
         pawns = board.bitboards[Piece.B_PAWN]
-        enemy_mask = board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
-                     board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
-                     board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING]
+        enemy_mask =
+            board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
+            board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
+            board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING]
         promo_rank_mask = UInt64(0x00000000000000FF)
         start_rank_mask = UInt64(0x00FF000000000000)
         direction = -8
@@ -66,13 +68,15 @@ function generate_pawn_moves!(board::Board, moves, start_idx::Int)
         ep_capture_piece = Piece.W_PAWN
     end
 
-    all_occupied = pawns |
-                   (board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
-                    board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
-                    board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING] |
-                    board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
-                    board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
-                    board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING])
+    all_occupied =
+        pawns | (
+            board.bitboards[Piece.W_PAWN] | board.bitboards[Piece.W_KNIGHT] |
+            board.bitboards[Piece.W_BISHOP] | board.bitboards[Piece.W_ROOK] |
+            board.bitboards[Piece.W_QUEEN] | board.bitboards[Piece.W_KING] |
+            board.bitboards[Piece.B_PAWN] | board.bitboards[Piece.B_KNIGHT] |
+            board.bitboards[Piece.B_BISHOP] | board.bitboards[Piece.B_ROOK] |
+            board.bitboards[Piece.B_QUEEN] | board.bitboards[Piece.B_KING]
+        )
 
     pawn_bb = pawns
     while pawn_bb != 0
@@ -105,20 +109,22 @@ function generate_pawn_moves!(board::Board, moves, start_idx::Int)
         # captures
         for offset in (left_capture_offset, right_capture_offset)
             # check file boundaries
-            file_ok = (offset in (left_capture_offset,) && sq % 8 != 0) ||
-                      (offset in (right_capture_offset,) && sq % 8 != 7)
+            file_ok =
+                (offset in (left_capture_offset,) && sq % 8 != 0) ||
+                (offset in (right_capture_offset,) && sq % 8 != 7)
             if file_ok
                 to_sq = sq + offset
                 if 0 <= to_sq < 64 && (enemy_mask & (UInt64(1) << to_sq)) != 0
                     capture_piece = find_capture_piece(
-                        board, to_sq,
+                        board,
+                        to_sq,
                         board.side_to_move == WHITE ? Piece.B_PAWN : Piece.W_PAWN,
-                        board.side_to_move == WHITE ? Piece.B_KING : Piece.W_KING
+                        board.side_to_move == WHITE ? Piece.B_KING : Piece.W_KING,
                     )
                     if (UInt64(1) << to_sq) & promo_rank_mask != 0
                         for promo in promo_pieces
-                            moves[idx] = Move(sq, to_sq;
-                                capture = capture_piece, promotion = promo)
+                            moves[idx] =
+                                Move(sq, to_sq; capture = capture_piece, promotion = promo)
                             idx += 1
                         end
                     else
@@ -151,5 +157,5 @@ function generate_pawn_moves(board::Board)
     moves = Vector{Move}(undef, 64)  # Preallocate maximum possible moves
     start_idx = 1
     end_idx = generate_pawn_moves!(board, moves, start_idx)
-    return moves[1:(end_idx - 1)]  # Return only the filled portion
+    return moves[1:(end_idx-1)]  # Return only the filled portion
 end

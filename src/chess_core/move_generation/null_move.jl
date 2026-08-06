@@ -18,7 +18,7 @@ function make_null_move!(board::Board)
         0,                    # promotion (none)
         false,                # not en passant
         board.eval_score,
-        board.game_phase_value
+        board.game_phase_value,
     )
 
     # --- Initialize incremental Zobrist hash ---
@@ -26,7 +26,7 @@ function make_null_move!(board::Board)
 
     # --- Remove old en passant ---
     if board.en_passant != -1
-        h ⊻= ZOBRIST_EP[(board.en_passant % 8) + 1]
+        h ⊻= ZOBRIST_EP[(board.en_passant%8)+1]
     end
 
     # --- Clear en passant ---

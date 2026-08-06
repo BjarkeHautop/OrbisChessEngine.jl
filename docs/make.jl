@@ -2,12 +2,16 @@ using OrbisChessEngine
 using Documenter
 
 DocMeta.setdocmeta!(
-    OrbisChessEngine, :DocTestSetup, :(using OrbisChessEngine); recursive = true)
+    OrbisChessEngine,
+    :DocTestSetup,
+    :(using OrbisChessEngine);
+    recursive = true,
+)
 
-const numbered_pages = [file
-                        for file in readdir(joinpath(@__DIR__, "src"))
-                        if
-                        file != "index.md" && splitext(file)[2] == ".md"]
+const numbered_pages = [
+    file for file in readdir(joinpath(@__DIR__, "src")) if
+    file != "index.md" && splitext(file)[2] == ".md"
+]
 
 makedocs(;
     modules = [OrbisChessEngine],
@@ -18,8 +22,9 @@ makedocs(;
         canonical = "https://BjarkeHautop.github.io/OrbisChessEngine.jl",
         repolink = "https://github.com/BjarkeHautop/OrbisChessEngine.jl",
         example_size_threshold = nothing,
-        size_threshold_ignore = ["05-quick-guide.md"]),
-    pages = ["index.md"; numbered_pages]
+        size_threshold_ignore = ["05-quick-guide.md"],
+    ),
+    pages = ["index.md"; numbered_pages],
 )
 
 deploydocs(; repo = "github.com/BjarkeHautop/OrbisChessEngine.jl")

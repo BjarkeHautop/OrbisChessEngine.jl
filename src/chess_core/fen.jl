@@ -15,10 +15,18 @@ function board_from_fen(fen::String)
 
     # Map FEN chars to piece types
     PIECE_MAP = Dict(
-        'P' => Piece.W_PAWN, 'N' => Piece.W_KNIGHT, 'B' => Piece.W_BISHOP,
-        'R' => Piece.W_ROOK, 'Q' => Piece.W_QUEEN, 'K' => Piece.W_KING,
-        'p' => Piece.B_PAWN, 'n' => Piece.B_KNIGHT, 'b' => Piece.B_BISHOP,
-        'r' => Piece.B_ROOK, 'q' => Piece.B_QUEEN, 'k' => Piece.B_KING
+        'P' => Piece.W_PAWN,
+        'N' => Piece.W_KNIGHT,
+        'B' => Piece.W_BISHOP,
+        'R' => Piece.W_ROOK,
+        'Q' => Piece.W_QUEEN,
+        'K' => Piece.W_KING,
+        'p' => Piece.B_PAWN,
+        'n' => Piece.B_KNIGHT,
+        'b' => Piece.B_BISHOP,
+        'r' => Piece.B_ROOK,
+        'q' => Piece.B_QUEEN,
+        'k' => Piece.B_KING,
     )
 
     for (rank_idx, row) in enumerate(rows)
@@ -36,7 +44,7 @@ function board_from_fen(fen::String)
         @assert file==8 "Each rank must have 8 squares"
     end
 
-    bitboards = MVector{NUM_PIECES, UInt64}(bb_vec)
+    bitboards = MVector{NUM_PIECES,UInt64}(bb_vec)
 
     # Side to move
     side_to_move = parts[2] == "w" ? WHITE : BLACK
@@ -57,8 +65,8 @@ function board_from_fen(fen::String)
     halfmove = length(parts) >= 5 ? UInt16(parse(Int, parts[5])) : UInt16(0)
 
     # Preallocate position_history and undo_stack to fixed size
-    pos_hist = MVector{MAX_MOVES_PER_GAME, UInt64}(zeros(UInt64, MAX_MOVES_PER_GAME))
-    undo_stk = MVector{MAX_MOVES_PER_GAME, UndoInfo}(undef)
+    pos_hist = MVector{MAX_MOVES_PER_GAME,UInt64}(zeros(UInt64, MAX_MOVES_PER_GAME))
+    undo_stk = MVector{MAX_MOVES_PER_GAME,UndoInfo}(undef)
 
     # Initialize Board
     board = Board(
@@ -71,7 +79,7 @@ function board_from_fen(fen::String)
         undo_stk,
         Int16(0), # undo_stack pointer
         Int32(0), # eval_score placeholder
-        UInt8(0) # game_phase_value placeholder
+        UInt8(0), # game_phase_value placeholder
     )
     # Initial position hash
     board.position_history[1] = zobrist_hash(board)

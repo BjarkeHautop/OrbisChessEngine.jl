@@ -62,7 +62,8 @@ end
     @test board == apply_moves(Board(fen = fen2), "e7e8=Q")
 
     @test_throws ErrorException OrbisChessEngine.handle_position(
-        "position startpos moves e2e5")
+        "position startpos moves e2e5",
+    )
 end
 
 @testset "to_uci / find_uci_move" begin
@@ -88,10 +89,11 @@ end
 
 @testset "handle_go" begin
     b = Board()
-    command = "go searchmoves e2e4 d7d5 e4d5 ponder e2e4 wtime " *
-              "30000 btime 30000 winc 100 binc 100 movestogo 5 " *
-              "depth 3 nodes 10000 mate 3 movetime 300 infinite " *
-              "unknowncommand"
+    command =
+        "go searchmoves e2e4 d7d5 e4d5 ponder e2e4 wtime " *
+        "30000 btime 30000 winc 100 binc 100 movestogo 5 " *
+        "depth 3 nodes 10000 mate 3 movetime 300 infinite " *
+        "unknowncommand"
 
     original_stdout = stdout
     (read_pipe, write_pipe) = redirect_stdout()

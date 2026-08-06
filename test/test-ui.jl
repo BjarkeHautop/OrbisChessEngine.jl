@@ -13,19 +13,11 @@ using Preferences
     plot(g)
     plot(g; board_orientation = :black)
 
-    set_preferences!(
-        OrbisChessEngine,
-        "theme" => "light",
-        force = true
-    )
+    set_preferences!(OrbisChessEngine, "theme" => "light", force = true)
     plot(b)
     plot(g)
 
-    set_preferences!(
-        OrbisChessEngine,
-        "theme" => "dark",
-        force = true
-    )
+    set_preferences!(OrbisChessEngine, "theme" => "dark", force = true)
     @test true
 end
 

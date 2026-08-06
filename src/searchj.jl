@@ -5,7 +5,7 @@ const MATE_THRESHOLD = 29_000  # threshold to consider a position as mate
 
 const MAX_PLY = 128  # safe upper bound for typical search depth
 const NO_MOVE = Move(0, 0, 0, 0, 0, false)
-const KILLERS = [MVector{MAX_PLY, Move}(fill(NO_MOVE, MAX_PLY)) for _ in 1:MAX_PLY]
+const KILLERS = [MVector{MAX_PLY,Move}(fill(NO_MOVE, MAX_PLY)) for _ = 1:MAX_PLY]
 
 # History heuristic: [side_to_move (1=WHITE,2=BLACK), from+1, to+1] -> score.
 # Tracks which quiet (from,to) moves have historically caused beta cutoffs,
@@ -38,7 +38,7 @@ end
 """
 Update the history heuristic for a quiet move that caused a beta cutoff.
 Only quiet (non-capture) moves are tracked — captures already order via
-MVV-LVA. Score is bumped by `depth^2` (moves that caused cutoffs deeper in
+SEE. Score is bumped by `depth^2` (moves that caused cutoffs deeper in
 the tree are weighted more heavily), clamped at `HISTORY_MAX`.
 - side: the side that made the move
 - m: the move to reward
@@ -47,8 +47,8 @@ the tree are weighted more heavily), clamped at `HISTORY_MAX`.
 function update_history!(side::Side, m::Move, depth::Int)
     if m.capture == 0  # only quiet moves
         side_idx = Int(side) + 1
-        HISTORY[side_idx, m.from + 1, m.to + 1] = min(
-            HISTORY[side_idx, m.from + 1, m.to + 1] + depth * depth, HISTORY_MAX)
+        HISTORY[side_idx, m.from+1, m.to+1] =
+            min(HISTORY[side_idx, m.from+1, m.to+1] + depth * depth, HISTORY_MAX)
     end
 end
 
@@ -57,33 +57,30 @@ end
 
 Heuristic to score moves for ordering:
 - Promotions are prioritized highest.
-- Captures are prioritized higher.
+- Captures are prioritized higher, ordered by true exchange value (SEE).
 - Moves giving check are prioritized.
 - Killer moves (quiet moves that caused a cutoff at this ply before) next.
 - Other quiet moves are ordered by the history heuristic.
 """
 function move_ordering_score(board::Board, m::Move, ply::Int)
     score = 0
-    capture_multiplier = 10
+    capture_base = 10_000
     in_check_bonus = 5000
     promotion_bonus = 8000
     killer_bonus = 4000
 
     # Killer move bonus, else history heuristic score (both quiet-move only)
     if m.capture == 0
-        if KILLERS[ply + 1][1] == m || KILLERS[ply + 1][2] == m
+        if KILLERS[ply+1][1] == m || KILLERS[ply+1][2] == m
             score += killer_bonus
         else
-            score += HISTORY[Int(board.side_to_move) + 1, m.from + 1, m.to + 1]
+            score += HISTORY[Int(board.side_to_move)+1, m.from+1, m.to+1]
         end
     end
 
-    # Captures: MVV-LVA
+    # Captures:
     if m.capture != 0
-        attacker_piece = piece_at(board, m.from)
-        capture_val = abs(PIECE_VALUES[m.capture])
-        attacker_val = abs(PIECE_VALUES[attacker_piece])
-        score += capture_val * capture_multiplier - attacker_val
+        score += capture_base + see(board, m)
     end
 
     # Bonus for checks.
@@ -202,8 +199,13 @@ Store an entry in the transposition table.
 - ply: current node's distance from this search's root
 """
 function tt_store(
-        hash::UInt64, value::Int, depth::Int, node_type::NodeType, best_move::Move,
-        ply::Int = 0)
+    hash::UInt64,
+    value::Int,
+    depth::Int,
+    node_type::NodeType,
+    best_move::Move,
+    ply::Int = 0,
+)
     idx = tt_index(hash)
     entry = TRANSPOSITION_TABLE[idx]
     value = mate_score_to_tt(value, ply)
@@ -217,12 +219,10 @@ end
 # Quiescence search: searches captures, or (while in check) all legal
 # evasions.
 const MAX_QUIESCENCE_PLY = 4
-const moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(MAX_QUIESCENCE_PLY)]
-const pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(MAX_QUIESCENCE_PLY)]
+const moves_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(MAX_QUIESCENCE_PLY)]
+const pseudo_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(MAX_QUIESCENCE_PLY)]
 
-function quiescence(board::Board, α::Int, β::Int;
-        ply::Int = 0
-)
+function quiescence(board::Board, α::Int, β::Int; ply::Int = 0)
     NODE_COUNT[] += 1
     side_to_move = board.side_to_move
     own_in_check = in_check(board, side_to_move)
@@ -232,8 +232,8 @@ function quiescence(board::Board, α::Int, β::Int;
             return evaluate(board)
         end
 
-        local_moves = moves_stack[ply + 1]      # safe per-ply buffer
-        local_pseudo = pseudo_stack[ply + 1]
+        local_moves = moves_stack[ply+1]      # safe per-ply buffer
+        local_pseudo = pseudo_stack[ply+1]
 
         n_moves = generate_legal_moves!(board, local_moves, local_pseudo)
 
@@ -270,14 +270,20 @@ function quiescence(board::Board, α::Int, β::Int;
 
         best_score = static_eval
 
-        local_moves = moves_stack[ply + 1]      # safe per-ply buffer
-        local_pseudo = pseudo_stack[ply + 1]
+        local_moves = moves_stack[ply+1]      # safe per-ply buffer
+        local_pseudo = pseudo_stack[ply+1]
 
         n_moves = generate_captures!(board, local_moves, local_pseudo)
     end
 
-    @inbounds for i in 1:n_moves
+    @inbounds for i = 1:n_moves
         move = local_moves[i]
+
+        # Bad-capture pruning:
+        if !own_in_check && see(board, move) < 0
+            continue
+        end
+
         make_move!(board, move)
         score = quiescence(board, α, β; ply = ply + 1)
         undo_move!(board, move)
@@ -309,7 +315,6 @@ function quiescence(board::Board, α::Int, β::Int;
 end
 
 function is_endgame(board::Board)
-    # Consider endgame when phase < 5
     return board.game_phase_value < 5
 end
 
@@ -338,43 +343,54 @@ const NULL_MOVE_REDUCTION = 2
 # Late Move Reductions: quiet moves searched late in a node's move list (i.e.
 # after move ordering has already tried the moves most likely to be good)
 # are searched at reduced depth first. If a reduced search unexpectedly
-# fails high, it's re-searched at full depth — see the PVS re-search
-# comment below, which LMR reuses to verify a reduction was safe.
+# fails high, it's re-searched at full depth.
 const LMR_MIN_DEPTH = 3          # only reduce when there's depth to spare
 const LMR_FULL_DEPTH_MOVES = 3   # first N moves at a node are never reduced
-const LMR_REDUCTION = 1          # plies shaved off a reduced search
 
-# Reverse futility pruning (aka static null move pruning): at shallow
-# remaining depth, if the static eval already clears β (or α, for Black) by
-# more than `depth` plies of real search could plausibly claw back, assume
-# a real move only does at least as well and skip the node entirely.
+# Reduction size scales with both remaining depth and how late the move is
+# in the ordered move list.
+# Clamped to [1, min(LMR_MAX_REDUCTION, depth - 1)]: the upper bound keeps
+# the reduced depth (`depth - 1 - r`)
+# from going negative, which callers rely on since `reduce` already
+# guards `depth >= LMR_MIN_DEPTH`.
+const LMR_BASE = 0.5
+const LMR_DIVISOR = 2.25
+const LMR_MAX_REDUCTION = 3
+
+@inline function lmr_reduction(depth::Int, move_number::Int)
+    r = LMR_BASE + log(depth) * log(move_number) / LMR_DIVISOR
+    return clamp(round(Int, r), 1, min(LMR_MAX_REDUCTION, depth - 1))
+end
+
+# Reverse futility pruning: at shallow remaining depth, if the static eval
+# already clears β (or α, for Black) by more than `depth` plies of real
+# search could plausibly claw back, assume a real move only does at least
+# as well and skip the node entirely.
 const RFP_MAX_DEPTH = 6
 const RFP_MARGIN_PER_PLY = 100
 
 # Futility pruning: same idea as RFP, but applied per quiet move inside the
-# move loop instead of to the whole node — skip a move outright if even its
-# best-case swing (static eval + a depth-scaled margin) can't plausibly
-# change the outcome. Never applied to the first (best-ordered) move.
+# move loop instead of to the whole node: skip a move outright if even its
+# best-case swing can't plausibly change the outcome.
 const FUTILITY_MAX_DEPTH = 3
 const FUTILITY_MARGIN_PER_PLY = 150
 
 function _search(
-        board::Board,
-        depth::Int,
-        ply::Int,
-        α::Int,
-        β::Int,
-        opening_book::Union{Nothing, PolyglotBook},
-        stop_time::Int,
-        moves_stack,
-        pseudo_stack,
-        score_stack
+    board::Board,
+    depth::Int,
+    ply::Int,
+    α::Int,
+    β::Int,
+    opening_book::Union{Nothing,PolyglotBook},
+    stop_time::Int,
+    moves_stack,
+    pseudo_stack,
+    score_stack,
 )::SearchResult
     NODE_COUNT[] += 1
 
     # Time check. Nothing has been evaluated at this node yet, so there's no
-    # real score to report — `complete = false` tells the caller not to
-    # treat this as a trustworthy value.
+    # real score to report.
     if (time_ns() ÷ 1_000_000) >= stop_time
         return SearchResult(0, NO_MOVE, false, false)
     end
@@ -404,18 +420,13 @@ function _search(
     own_in_check = in_check(board, side_to_move)
     board_is_endgame = is_endgame(board)
 
-    # Both static-eval-based prunings below (reverse futility here, and
-    # futility per-move in the move loop) rest on the same assumption: at
-    # shallow remaining depth, a position already far enough beyond α/β
-    # doesn't need real search to know its outcome. Both share one static
-    # eval call and the same unsoundness guards as null-move pruning:
-    # skipped in check (tactical, unstable position), in the endgame
-    # (zugzwang breaks the "some move is at least this good" assumption),
-    # and near mate scores (static eval is never mate-range, so this guard
-    # is mostly redundant, but cheap insurance against interfering with
-    # this file's mate-score handling).
-    can_prune_statically = !own_in_check && !board_is_endgame &&
-                           abs(α) < MATE_THRESHOLD && abs(β) < MATE_THRESHOLD
+    # At shallow remaining depth, a position already far enough beyond α/β
+    # doesn't need real search to know its outcome.
+    can_prune_statically =
+        !own_in_check &&
+        !board_is_endgame &&
+        abs(α) < MATE_THRESHOLD &&
+        abs(β) < MATE_THRESHOLD
     static_eval = 0
     if can_prune_statically && depth <= max(RFP_MAX_DEPTH, FUTILITY_MAX_DEPTH)
         static_eval = evaluate(board)
@@ -432,15 +443,22 @@ function _search(
 
     # Null move pruning: a free pass that still fails high/low means the
     # position is good enough that a real move only does better. Skipped in
-    # the endgame (zugzwang) and while in check (no null move is legal).
-    # `result.complete` guards against trusting a subsearch cut short by the
-    # time budget, same as everywhere else in this function.
+    # the endgame (zugzwang).
     if (depth > NULL_MOVE_REDUCTION + 1) && !board_is_endgame && !own_in_check
         make_null_move!(board)
         null_α, null_β = side_to_move == WHITE ? (β - 1, β) : (α, α + 1)
-        result = _search(board, depth - 1 - NULL_MOVE_REDUCTION, ply + 1, null_α, null_β,
-            nothing, stop_time,
-            moves_stack, pseudo_stack, score_stack)
+        result = _search(
+            board,
+            depth - 1 - NULL_MOVE_REDUCTION,
+            ply + 1,
+            null_α,
+            null_β,
+            nothing,
+            stop_time,
+            moves_stack,
+            pseudo_stack,
+            score_stack,
+        )
         undo_null_move!(board)
 
         if result.complete
@@ -452,47 +470,43 @@ function _search(
         end
     end
 
-    moves = moves_stack[ply + 1]
-    pseudo = pseudo_stack[ply + 1]
-    scores = score_stack[ply + 1]
+    moves = moves_stack[ply+1]
+    pseudo = pseudo_stack[ply+1]
+    scores = score_stack[ply+1]
 
     n_moves = generate_legal_moves!(board, moves, pseudo)
 
     if n_moves == 0
-        val = in_check(board, side_to_move) ?
-              (side_to_move == WHITE ? -MATE_VALUE + ply : MATE_VALUE - ply) : 0
+        val =
+            in_check(board, side_to_move) ?
+            (side_to_move == WHITE ? -MATE_VALUE + ply : MATE_VALUE - ply) : 0
         return SearchResult(val, NO_MOVE, false, true)
     end
 
-    # Draw detection: after move gen (free, already done) and after
-    # mate/stalemate (higher priority); not inside evaluate(), which runs
-    # per quiescence node. Skipped at the root (ply == 0): unlike
-    # checkmate/stalemate, a draw-by-rule position still has legal moves,
-    # and the root needs an actual move to play, not just a score — an
-    # internal node only needs the score, since its parent is comparing it
-    # against sibling moves, not asking it what to play. Without this
-    # guard, a game that reaches e.g. insufficient material at the start
-    # of one of Orbis's own searches gets no move back at all from
-    # `search_root`, which UCI tournament managers treat as an illegal
-    # move (forfeit) rather than a draw.
-    if ply > 0 && (is_insufficient_material(board) || is_threefold_repetition(board) ||
-        is_fifty_move_rule(board))
+    # A draw-by-rule position still has legal moves, and the root needs an actual
+    # move to play, not just a score. An internal node only needs the score, since its
+    # parent is comparing it against sibling moves, not asking it what to play.
+    if ply > 0 && (
+        is_insufficient_material(board) ||
+        is_threefold_repetition(board) ||
+        is_fifty_move_rule(board)
+    )
         return SearchResult(0, NO_MOVE, false, true)
     end
 
     # Precompute move scores
-    @inbounds for i in 1:n_moves
+    @inbounds for i = 1:n_moves
         scores[i] = move_ordering_score(board, moves[i], ply)
     end
 
     best_score = board.side_to_move == WHITE ? -MATE_VALUE : MATE_VALUE
     best_move = NO_MOVE
 
-    @inbounds for i in 1:n_moves
+    @inbounds for i = 1:n_moves
         # Find highest scoring remaining move
         best_idx = i
         best_val = scores[i]
-        @inbounds for j in (i + 1):n_moves
+        @inbounds for j = (i+1):n_moves
             if scores[j] > best_val
                 best_val = scores[j]
                 best_idx = j
@@ -512,12 +526,12 @@ function _search(
             return SearchResult(best_score, best_move, false, false)
         end
 
-        # Futility pruning: skip a quiet move at shallow depth whose
-        # best-case swing still can't plausibly change this node's outcome.
-        # Never applied to the first (best-ordered) move — same reasoning
-        # as LMR not reducing it.
-        if can_prune_statically && depth <= FUTILITY_MAX_DEPTH && i > 1 &&
-           m.capture == 0 && m.promotion == 0
+        # Futility pruning:
+        if can_prune_statically &&
+           depth <= FUTILITY_MAX_DEPTH &&
+           i > 1 &&
+           m.capture == 0 &&
+           m.promotion == 0
             margin = FUTILITY_MARGIN_PER_PLY * depth
             if side_to_move == WHITE && static_eval + margin <= α
                 continue
@@ -531,56 +545,95 @@ function _search(
         # - PVS: scout with a 1-point-wide null window at full depth. A
         #   null window only proves whether the true score is above/below
         #   it, not the exact value, but that's all we need for moves we
-        #   expect to fail low (i.e. not beat the current best) — and it's
-        #   cheaper to prove than to compute exactly. If the scout instead
-        #   fails high, the move may really be better, so re-search with
+        #   expect to fail low (i.e. not beat the current best). If the scout
+        #   instead fails high, the move may really be better, so re-search with
         #   the true (α, β) window to get an exact, trustworthy score.
-        # - LMR: quiet moves late in the (already ordered, so presumably
-        #   less promising) move list, at a node not itself evading check,
-        #   get the null-window scout above tried at reduced depth first;
-        #   only if *that* fails high is it re-verified at full depth
+        #
+        # - LMR: quiet moves late in the ordered move list, at a node not itself
+        #   evading check, get the null-window scout above tried at reduced depth first;
+        #   only if it fails high is it re-verified at full depth
         #   before potentially falling through to the full-window re-search.
         make_move!(board, m)
 
         if i == 1
-            result = _search(board, depth - 1, ply + 1, α, β,
-                opening_book, stop_time,
-                moves_stack, pseudo_stack, score_stack)
+            result = _search(
+                board,
+                depth - 1,
+                ply + 1,
+                α,
+                β,
+                opening_book,
+                stop_time,
+                moves_stack,
+                pseudo_stack,
+                score_stack,
+            )
         else
-            reduce = depth >= LMR_MIN_DEPTH && i > LMR_FULL_DEPTH_MOVES &&
-                     m.capture == 0 && m.promotion == 0 && !own_in_check
-            r = reduce ? LMR_REDUCTION : 0
+            reduce =
+                depth >= LMR_MIN_DEPTH &&
+                i > LMR_FULL_DEPTH_MOVES &&
+                m.capture == 0 &&
+                m.promotion == 0 &&
+                !own_in_check
+            r = reduce ? lmr_reduction(depth, i) : 0
             null_α, null_β = side_to_move == WHITE ? (α, α + 1) : (β - 1, β)
 
-            result = _search(board, depth - 1 - r, ply + 1, null_α, null_β,
-                opening_book, stop_time,
-                moves_stack, pseudo_stack, score_stack)
+            result = _search(
+                board,
+                depth - 1 - r,
+                ply + 1,
+                null_α,
+                null_β,
+                opening_book,
+                stop_time,
+                moves_stack,
+                pseudo_stack,
+                score_stack,
+            )
 
-            # Reduced scout looked better than expected — verify at full
-            # depth (still null window) before trusting it.
-            if result.complete && r > 0 &&
-               ((side_to_move == WHITE && result.score > α) ||
-                (side_to_move == BLACK && result.score < β))
-                result = _search(board, depth - 1, ply + 1, null_α, null_β,
-                    opening_book, stop_time,
-                    moves_stack, pseudo_stack, score_stack)
+            # Reduced scout looked better than expected
+            if result.complete &&
+               r > 0 &&
+               (
+                   (side_to_move == WHITE && result.score > α) ||
+                   (side_to_move == BLACK && result.score < β)
+               )
+                result = _search(
+                    board,
+                    depth - 1,
+                    ply + 1,
+                    null_α,
+                    null_β,
+                    opening_book,
+                    stop_time,
+                    moves_stack,
+                    pseudo_stack,
+                    score_stack,
+                )
             end
 
-            # Null-window result landed strictly inside (α, β): it's a real
-            # improvement but the narrow window can't tell us by how much —
+            # Null-window result landed strictly inside (α, β);
             # re-search with the true window for an exact score.
             if result.complete && α < result.score < β
-                result = _search(board, depth - 1, ply + 1, α, β,
-                    opening_book, stop_time,
-                    moves_stack, pseudo_stack, score_stack)
+                result = _search(
+                    board,
+                    depth - 1,
+                    ply + 1,
+                    α,
+                    β,
+                    opening_book,
+                    stop_time,
+                    moves_stack,
+                    pseudo_stack,
+                    score_stack,
+                )
             end
         end
 
         undo_move!(board, m)
 
         if !result.complete
-            # Child was cut short by the time budget — abort this node too
-            # instead of comparing against an untrustworthy score.
+            # Child was cut short by the time budget, abort.
             return SearchResult(best_score, best_move, false, false)
         end
 
@@ -639,7 +692,7 @@ function extract_root_pv(board::Board, root_move::Move, max_depth::Int)
     temp_board = deepcopy(board)
     make_move!(temp_board, root_move)
 
-    for _ in 2:max_depth
+    for _ = 2:max_depth
         h = zobrist_hash(temp_board)
         _, move, hit = tt_probe_raw(h)
         if !hit || move === NO_MOVE
@@ -660,7 +713,12 @@ side to move, per the UCI spec), elapsed time, node count/rate, and PV in
 UCI notation.
 """
 function uci_info_line(
-        depth::Int, score::Int, pv::Vector{Move}, side_to_move::Side, start_ms::Int)
+    depth::Int,
+    score::Int,
+    pv::Vector{Move},
+    side_to_move::Side,
+    start_ms::Int,
+)
     elapsed = max(1, (time_ns() ÷ 1_000_000) - start_ms)
     nodes = NODE_COUNT[]
     nps = (nodes * 1000) ÷ elapsed
@@ -675,34 +733,36 @@ function uci_info_line(
         "cp $stm_score"
     end
 
-    println("info depth $depth score $score_str time $elapsed nodes $nodes " *
-            "nps $nps pv $pv_str")
+    println(
+        "info depth $depth score $score_str time $elapsed nodes $nodes " *
+        "nps $nps pv $pv_str",
+    )
 end
 
-# Panic extension: a depth that scores this much worse (centipawns, for the
-# side to move) than the previous depth, or changes its mind about the best
-# move, hasn't converged — worth extending past the soft limit for instead
-# of committing to a possibly-bad move on schedule.
+# Panic extension: a depth that scores this much worse than the previous depth,
+# or changes its mind about the best move, hasn't converged.
 const PANIC_SCORE_DROP = 50
 
-function search_root(board::Board, max_depth::Int;
-        opt_stop_time::Int = typemax(Int),
-        max_stop_time::Int = typemax(Int),
-        opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
-        verbose::Bool = false,
-        uci_info::Bool = false
+function search_root(
+    board::Board,
+    max_depth::Int;
+    opt_stop_time::Int = typemax(Int),
+    max_stop_time::Int = typemax(Int),
+    opening_book::Union{Nothing,PolyglotBook} = KOMODO_OPENING_BOOK,
+    verbose::Bool = false,
+    uci_info::Bool = false,
 )::SearchResult
     search_start = Int(time_ns() ÷ 1_000_000)
     # Use NO_MOVE as placeholder internally
     best_result_internal = SearchResult(0, NO_MOVE, false, false)
-    # Last-resort fallback if no depth ever completes: better than no move.
+    # Last-resort fallback if no depth ever completes.
     fallback_result = SearchResult(0, NO_MOVE, false, false)
     prev_score = nothing
     prev_move = NO_MOVE
 
-    moves_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(max_depth + 1)]
-    pseudo_stack = [MVector{MAX_MOVES, Move}(undef) for _ in 1:(max_depth + 1)]
-    score_stack = [MVector{MAX_MOVES, Int}(undef) for _ in 1:(max_depth + 1)]
+    moves_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(max_depth+1)]
+    pseudo_stack = [MVector{MAX_MOVES,Move}(undef) for _ = 1:(max_depth+1)]
+    score_stack = [MVector{MAX_MOVES,Int}(undef) for _ = 1:(max_depth+1)]
 
     # Opening book probe
     if opening_book !== nothing
@@ -717,25 +777,35 @@ function search_root(board::Board, max_depth::Int;
     end
 
     # --- Iterative deepening ---
-    for depth in 1:max_depth
+    for depth = 1:max_depth
         if (time_ns() ÷ 1_000_000) >= max_stop_time
             break
         end
-        result = _search(board, depth, 0, -MATE_VALUE, MATE_VALUE,
-            opening_book, max_stop_time,
-            moves_stack, pseudo_stack, score_stack)
+        result = _search(
+            board,
+            depth,
+            0,
+            -MATE_VALUE,
+            MATE_VALUE,
+            opening_book,
+            max_stop_time,
+            moves_stack,
+            pseudo_stack,
+            score_stack,
+        )
 
         if result.move !== NO_MOVE
             fallback_result = result
         end
 
-        # Only adopt a depth once it's complete — never a time-budget cutoff.
+        # Only adopt a depth once it's complete
         unstable = false
         if result.complete && result.move !== NO_MOVE
             if prev_score !== nothing
-                worse_for_stm = board.side_to_move == WHITE ?
-                                result.score < prev_score - PANIC_SCORE_DROP :
-                                result.score > prev_score + PANIC_SCORE_DROP
+                worse_for_stm =
+                    board.side_to_move == WHITE ?
+                    result.score < prev_score - PANIC_SCORE_DROP :
+                    result.score > prev_score + PANIC_SCORE_DROP
                 unstable = worse_for_stm || result.move != prev_move
             end
             prev_score = result.score
@@ -752,8 +822,13 @@ function search_root(board::Board, max_depth::Int;
             end
 
             if uci_info
-                uci_info_line(depth, best_result_internal.score, pv,
-                    board.side_to_move, search_start)
+                uci_info_line(
+                    depth,
+                    best_result_internal.score,
+                    pv,
+                    board.side_to_move,
+                    search_start,
+                )
             end
         end
 
@@ -762,7 +837,9 @@ function search_root(board::Board, max_depth::Int;
             if verbose
                 mate_in = MATE_VALUE - abs(best_result_internal.score)
                 mate_pv_str = join(
-                    string.(extract_root_pv(board, best_result_internal.move, depth)), " ")
+                    string.(extract_root_pv(board, best_result_internal.move, depth)),
+                    " ",
+                )
                 println("Depth $depth | Score: Mate in $mate_in ply | PV: $mate_pv_str")
             end
 
@@ -771,8 +848,7 @@ function search_root(board::Board, max_depth::Int;
 
         now = time_ns() ÷ 1_000_000
         # Soft stop: once optimal time is reached, stop after the current
-        # depth — unless it looks unstable, in which case keep going (still
-        # bounded by max_stop_time above and _search's own per-node check).
+        # depth, unless it looks unstable.
         if now >= opt_stop_time && !unstable
             break
         end
@@ -824,22 +900,28 @@ search(board; depth=5, opening_book=nothing, verbose=true, time_budget=5000)
 ```
 """
 function search(
-        board::Board;
-        depth::Int,
-        opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
-        verbose::Bool = false,
-        uci_info::Bool = false,
-        time_budget::Int = typemax(Int),
-        max_time_budget::Int = time_budget
+    board::Board;
+    depth::Int,
+    opening_book::Union{Nothing,PolyglotBook} = KOMODO_OPENING_BOOK,
+    verbose::Bool = false,
+    uci_info::Bool = false,
+    time_budget::Int = typemax(Int),
+    max_time_budget::Int = time_budget,
 )
     tt_clear!()  # reset TT for this search
     NODE_COUNT[] = 0
     now = time_ns() ÷ 1_000_000
     opt_stop_time = Int(now + min(time_budget, 1_000_000_000))  # cap to 1e9 ms ~ 11 days
     max_stop_time = Int(now + min(max(max_time_budget, time_budget), 1_000_000_000))
-    result = search_root(board, depth; opt_stop_time = opt_stop_time,
-        max_stop_time = max_stop_time, opening_book = opening_book,
-        verbose = verbose, uci_info = uci_info)
+    result = search_root(
+        board,
+        depth;
+        opt_stop_time = opt_stop_time,
+        max_stop_time = max_stop_time,
+        opening_book = opening_book,
+        verbose = verbose,
+        uci_info = uci_info,
+    )
     # Convert NO_MOVE to nothing for public API
     if result.move === NO_MOVE
         if verbose

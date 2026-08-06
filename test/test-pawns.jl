@@ -11,9 +11,8 @@ using Test
     @test length(white_moves) == 16
 
     # Check a few specific moves
-    expected_moves = [
-        Move("a2", "a3"), Move("a2", "a4"), Move("e2", "e3"), Move("e2", "e4")
-    ]
+    expected_moves =
+        [Move("a2", "a3"), Move("a2", "a4"), Move("e2", "e3"), Move("e2", "e4")]
 
     for em in expected_moves
         @test em in white_moves
@@ -30,7 +29,7 @@ using Test
         Move(OrbisChessEngine.square_index(1, 7), OrbisChessEngine.square_index(1, 6)),  # a7 to a6
         Move(OrbisChessEngine.square_index(1, 7), OrbisChessEngine.square_index(1, 5)),  # a7 to a5
         Move(OrbisChessEngine.square_index(5, 7), OrbisChessEngine.square_index(5, 6)),  # e7 to e6
-        Move(OrbisChessEngine.square_index(5, 7), OrbisChessEngine.square_index(5, 5))   # e7 to e5
+        Move(OrbisChessEngine.square_index(5, 7), OrbisChessEngine.square_index(5, 5)),   # e7 to e5
     ]
 
     for em in expected_black_moves
@@ -57,10 +56,14 @@ using Test
     make_move!(b, en_passant_move)
     # Check that the black pawn on d5 is removed
     @test !OrbisChessEngine.testbit(
-        b.bitboards[Piece.B_PAWN], OrbisChessEngine.square_index(4, 5))
+        b.bitboards[Piece.B_PAWN],
+        OrbisChessEngine.square_index(4, 5),
+    )
     # Check that white pawn is now on d6
     @test OrbisChessEngine.testbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(4, 6))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(4, 6),
+    )
 
     # -----------------------------
     # Test promotion generation
@@ -73,7 +76,7 @@ using Test
         Move("g7", "g8"; promotion = Piece.W_ROOK),
         Move("g7", "g8"; promotion = Piece.W_BISHOP),
         Move("g7", "g8"; promotion = Piece.W_KNIGHT),
-        Move("g7", "h8"; promotion = Piece.W_QUEEN, capture = Piece.B_ROOK)
+        Move("g7", "h8"; promotion = Piece.W_QUEEN, capture = Piece.B_ROOK),
     ]
     for em in expected_promotions
         @test em in promotion_moves
@@ -112,7 +115,7 @@ end
         Move(b, "a2b1=Q"),
         Move(b, "a2b1=R"),
         Move(b, "a2b1=B"),
-        Move(b, "a2b1=N")
+        Move(b, "a2b1=N"),
     ]
     @test length(pawn_moves) == length(expected_pawn_moves)
     for em in expected_pawn_moves

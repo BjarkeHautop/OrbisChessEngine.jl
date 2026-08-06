@@ -10,9 +10,13 @@ using Test
 
     # Unblock c1 bishop by moving pawn d2 → d3
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(4, 2))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(4, 2),
+    )
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.setbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(4, 3))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(4, 3),
+    )
 
     white_bishop_moves = OrbisChessEngine.generate_bishop_moves(b)
     expected_moves = [
@@ -20,7 +24,7 @@ using Test
         Move("c1", "e3"),
         Move("c1", "f4"),
         Move("c1", "g5"),
-        Move("c1", "h6")
+        Move("c1", "h6"),
     ]
 
     for em in expected_moves
@@ -33,15 +37,19 @@ end
 
     # Unblock a1 rook by moving pawn a2 → a4
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(1, 2))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(1, 2),
+    )
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.setbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(1, 4))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(1, 4),
+    )
 
     white_rook_moves = OrbisChessEngine.generate_rook_moves(b)
 
     expected_moves = [
         Move(OrbisChessEngine.square_index(1, 1), OrbisChessEngine.square_index(1, 2)),  # a1 → a2
-        Move(OrbisChessEngine.square_index(1, 1), OrbisChessEngine.square_index(1, 3))  # a1 → a3
+        Move(OrbisChessEngine.square_index(1, 1), OrbisChessEngine.square_index(1, 3)),  # a1 → a3
     ]
 
     for em in expected_moves
@@ -54,23 +62,37 @@ end
 
     # Clear pieces between king and rook for white kingside castling
     b.bitboards[Piece.W_KNIGHT] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_KNIGHT], OrbisChessEngine.square_index(2, 1))
+        b.bitboards[Piece.W_KNIGHT],
+        OrbisChessEngine.square_index(2, 1),
+    )
     b.bitboards[Piece.W_BISHOP] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_BISHOP], OrbisChessEngine.square_index(3, 1))
+        b.bitboards[Piece.W_BISHOP],
+        OrbisChessEngine.square_index(3, 1),
+    )
     b.bitboards[Piece.W_QUEEN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_QUEEN], OrbisChessEngine.square_index(4, 1))
+        b.bitboards[Piece.W_QUEEN],
+        OrbisChessEngine.square_index(4, 1),
+    )
     b.bitboards[Piece.W_BISHOP] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_BISHOP], OrbisChessEngine.square_index(6, 1))
+        b.bitboards[Piece.W_BISHOP],
+        OrbisChessEngine.square_index(6, 1),
+    )
     b.bitboards[Piece.W_KNIGHT] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_KNIGHT], OrbisChessEngine.square_index(7, 1))
+        b.bitboards[Piece.W_KNIGHT],
+        OrbisChessEngine.square_index(7, 1),
+    )
 
     # Clear all white pawns
     b.bitboards[Piece.W_PAWN] = UInt64(0)
     # Add black pawn on a2 and h2
     b.bitboards[Piece.B_PAWN] = OrbisChessEngine.setbit(
-        b.bitboards[Piece.B_PAWN], OrbisChessEngine.square_index(1, 2))
+        b.bitboards[Piece.B_PAWN],
+        OrbisChessEngine.square_index(1, 2),
+    )
     b.bitboards[Piece.B_PAWN] = OrbisChessEngine.setbit(
-        b.bitboards[Piece.B_PAWN], OrbisChessEngine.square_index(8, 2))
+        b.bitboards[Piece.B_PAWN],
+        OrbisChessEngine.square_index(8, 2),
+    )
 
     # Step 1: move rook to f1
     m1 = Move("h1", "f1")
@@ -104,13 +126,21 @@ end
 
     # Unblock d1 queen by moving pawn d2 → d4 and e2 → e4
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(4, 2))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(4, 2),
+    )
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.setbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(4, 4))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(4, 4),
+    )
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.clearbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(5, 2))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(5, 2),
+    )
     b.bitboards[Piece.W_PAWN] = OrbisChessEngine.setbit(
-        b.bitboards[Piece.W_PAWN], OrbisChessEngine.square_index(5, 4))
+        b.bitboards[Piece.W_PAWN],
+        OrbisChessEngine.square_index(5, 4),
+    )
 
     white_queen_moves = OrbisChessEngine.generate_queen_moves(b)
 
@@ -120,7 +150,7 @@ end
         Move(OrbisChessEngine.square_index(4, 1), OrbisChessEngine.square_index(5, 2)),  # d1 → e2
         Move(OrbisChessEngine.square_index(4, 1), OrbisChessEngine.square_index(6, 3)),  # d1 → f3
         Move(OrbisChessEngine.square_index(4, 1), OrbisChessEngine.square_index(7, 4)),  # d1 → g4
-        Move(OrbisChessEngine.square_index(4, 1), OrbisChessEngine.square_index(8, 5))  # d1 → h5
+        Move(OrbisChessEngine.square_index(4, 1), OrbisChessEngine.square_index(8, 5)),  # d1 → h5
     ]
 
     for em in expected_moves

@@ -10,9 +10,8 @@ using Test
     # Each knight has 2 moves at the starting position, so total 4 moves
     @test length(white_knight_moves) == 4
 
-    expected_moves = [
-        Move("b1", "a3"), Move("b1", "c3"), Move("g1", "f3"), Move("g1", "h3")
-    ]
+    expected_moves =
+        [Move("b1", "a3"), Move("b1", "c3"), Move("g1", "f3"), Move("g1", "h3")]
 
     for em in expected_moves
         @test em in white_knight_moves
@@ -40,9 +39,8 @@ end
     # Each knight has 2 moves at the starting position, so total 4 moves
     @test idx == 4
 
-    expected_moves = [
-        Move("b1", "a3"), Move("b1", "c3"), Move("g1", "f3"), Move("g1", "h3")
-    ]
+    expected_moves =
+        [Move("b1", "a3"), Move("b1", "c3"), Move("g1", "f3"), Move("g1", "h3")]
 
     for em in expected_moves
         @test em in moves

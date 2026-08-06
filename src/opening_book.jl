@@ -34,12 +34,12 @@ function load_polyglot_book(path::String)
     bytes = read(path)
     n = div(length(bytes), 16)
     entries = Vector{PolyglotEntry}(undef, n)
-    for i in 1:n
+    for i = 1:n
         offset = (i - 1) * 16 + 1
-        key = ntoh(reinterpret(UInt64, bytes[offset:(offset + 7)])[1])
-        move = ntoh(reinterpret(UInt16, bytes[(offset + 8):(offset + 9)])[1])
-        weight = ntoh(reinterpret(UInt16, bytes[(offset + 10):(offset + 11)])[1])
-        learn = ntoh(reinterpret(UInt32, bytes[(offset + 12):(offset + 15)])[1])
+        key = ntoh(reinterpret(UInt64, bytes[offset:(offset+7)])[1])
+        move = ntoh(reinterpret(UInt16, bytes[(offset+8):(offset+9)])[1])
+        weight = ntoh(reinterpret(UInt16, bytes[(offset+10):(offset+11)])[1])
+        learn = ntoh(reinterpret(UInt32, bytes[(offset+12):(offset+15)])[1])
         entries[i] = PolyglotEntry(key, move, weight, learn)
     end
     return PolyglotBook(entries)
@@ -55,19 +55,25 @@ const BLACK_QUEEN = 0x8  # q
 
 # Map board piece constants to Polyglot piece indices (0..11)
 const POLYGLOT_PIECE_INDEX = Dict(
-    Piece.B_PAWN => 0, Piece.W_PAWN => 1, Piece.B_KNIGHT => 2, Piece.W_KNIGHT => 3,
-    Piece.B_BISHOP => 4, Piece.W_BISHOP => 5,
-    Piece.B_ROOK => 6, Piece.W_ROOK => 7, Piece.B_QUEEN => 8, Piece.W_QUEEN => 9,
-    Piece.B_KING => 10, Piece.W_KING => 11
+    Piece.B_PAWN => 0,
+    Piece.W_PAWN => 1,
+    Piece.B_KNIGHT => 2,
+    Piece.W_KNIGHT => 3,
+    Piece.B_BISHOP => 4,
+    Piece.W_BISHOP => 5,
+    Piece.B_ROOK => 6,
+    Piece.W_ROOK => 7,
+    Piece.B_QUEEN => 8,
+    Piece.W_QUEEN => 9,
+    Piece.B_KING => 10,
+    Piece.W_KING => 11,
 )
 
 # Map castling flag to 0..3 index for Polyglot
 function flag_index(flag::UInt8)
     return flag == WHITE_KING ? 0 :
            flag == WHITE_QUEEN ? 1 :
-           flag == BLACK_KING ? 2 :
-           flag == BLACK_QUEEN ? 3 :
-           error("invalid castling flag")
+           flag == BLACK_KING ? 2 : flag == BLACK_QUEEN ? 3 : error("invalid castling flag")
 end
 
 function polyglot_piece_index(piece, square)
@@ -105,11 +111,11 @@ function polyglot_hash(board::Board)::UInt64
     h = UInt64(0)
 
     # 1. Pieces on squares
-    for sq in 0:63
+    for sq = 0:63
         piece = piece_at(board, sq)    # returns 0..12
         if piece != 0
             index = polyglot_piece_index(piece, sq)
-            h ⊻= POLYGLOT_RANDOM_ARRAY[index + 1]
+            h ⊻= POLYGLOT_RANDOM_ARRAY[index+1]
         end
     end
 
@@ -117,7 +123,7 @@ function polyglot_hash(board::Board)::UInt64
     for flag in [WHITE_KING, WHITE_QUEEN, BLACK_KING, BLACK_QUEEN]
         if board.castling_rights & flag != 0
             idx = 768 + flag_index(flag)
-            h ⊻= POLYGLOT_RANDOM_ARRAY[idx + 1]
+            h ⊻= POLYGLOT_RANDOM_ARRAY[idx+1]
         end
     end
 
@@ -126,7 +132,7 @@ function polyglot_hash(board::Board)::UInt64
         file = file_of(board.en_passant)
         if has_pawn_for_en_passant(board, file)
             idx = 772 + file
-            h ⊻= POLYGLOT_RANDOM_ARRAY[idx + 1]
+            h ⊻= POLYGLOT_RANDOM_ARRAY[idx+1]
         end
     end
 
@@ -141,7 +147,7 @@ end
 using Distributions
 
 function book_move(board::Board, book::PolyglotBook)
-    # Add seed?
+    # TODO: Add seed?
 
     key = polyglot_hash(board)
     total_weight = 0
@@ -180,15 +186,15 @@ function decode_polyglot_move(code::UInt16, board::Board)
         promotion = 0
     else
         if board.side_to_move == WHITE
-            promotion = (prom == 1 ? Piece.W_KNIGHT :
-                         prom == 2 ? Piece.W_BISHOP :
-                         prom == 3 ? Piece.W_ROOK :
-                         Piece.W_QUEEN)
+            promotion = (
+                prom == 1 ? Piece.W_KNIGHT :
+                prom == 2 ? Piece.W_BISHOP : prom == 3 ? Piece.W_ROOK : Piece.W_QUEEN
+            )
         else
-            promotion = (prom == 1 ? Piece.B_KNIGHT :
-                         prom == 2 ? Piece.B_BISHOP :
-                         prom == 3 ? Piece.B_ROOK :
-                         Piece.B_QUEEN)
+            promotion = (
+                prom == 1 ? Piece.B_KNIGHT :
+                prom == 2 ? Piece.B_BISHOP : prom == 3 ? Piece.B_ROOK : Piece.B_QUEEN
+            )
         end
     end
 
@@ -197,8 +203,7 @@ function decode_polyglot_move(code::UInt16, board::Board)
 
     # en passant detection
     enp = false
-    if piece_at(board, from) in (Piece.W_PAWN, Piece.B_PAWN) &&
-       to == board.en_passant
+    if piece_at(board, from) in (Piece.W_PAWN, Piece.B_PAWN) && to == board.en_passant
         enp = true
         capture = board.side_to_move == WHITE ? Piece.B_PAWN : Piece.W_PAWN
     end
@@ -220,12 +225,15 @@ function decode_polyglot_move(code::UInt16, board::Board)
         end
     end
 
-    return Move(from, to;
+    return Move(
+        from,
+        to;
         promotion = promotion,
         capture = capture,
         castling = 0,
-        en_passant = enp)
+        en_passant = enp,
+    )
 end
 
-const KOMODO_OPENING_BOOK = load_polyglot_book(joinpath(
-    @__DIR__, "..", "assets", "komodo.bin"))
+const KOMODO_OPENING_BOOK =
+    load_polyglot_book(joinpath(@__DIR__, "..", "assets", "komodo.bin"))

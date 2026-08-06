@@ -28,7 +28,7 @@ end
 Returns the next square index in direction `dir = (df, dr)` from `sq`.
 Returns `nothing` if it goes off-board.
 """
-function next_square(sq::Int, dir::Tuple{Int, Int})
+function next_square(sq::Int, dir::Tuple{Int,Int})
     f, r = file_rank(sq)  # current file/rank (1..8)
     nf, nr = f + dir[1], r + dir[2]
 
@@ -53,8 +53,14 @@ Returns a bitboard of all occupied squares.
     return occ
 end
 
-function is_move_legal(board::Board, m::Move, side::Side,
-        king_sq::Int, occ, in_check_now::Bool)::Bool
+function is_move_legal(
+    board::Board,
+    m::Move,
+    side::Side,
+    king_sq::Int,
+    occ,
+    in_check_now::Bool,
+)::Bool
     # --- Castling check ---
     if m.castling != 0
         path = if side == WHITE
@@ -69,7 +75,9 @@ function is_move_legal(board::Board, m::Move, side::Side,
 
     # En passant clears the captured pawn's square in addition to m.from, which can
     # open a discovered check that ray_between (checking only m.from) won't see.
-    if !in_check_now && !m.en_passant && !ray_between(occ, king_sq, m.from) &&
+    if !in_check_now &&
+       !m.en_passant &&
+       !ray_between(occ, king_sq, m.from) &&
        m.from != king_sq
         return true
     else
@@ -86,15 +94,20 @@ end
 Filters pseudo-legal moves into legal moves, avoiding full make/undo
 for moves that clearly cannot expose the king.
 """
-function _filter_legal_moves!(board::Board, pseudo,
-        start::Int, stop::Int,
-        moves, n_moves::Int)
+function _filter_legal_moves!(
+    board::Board,
+    pseudo,
+    start::Int,
+    stop::Int,
+    moves,
+    n_moves::Int,
+)
     side = board.side_to_move
     king_sq = king_square(board, side)
     occ = occupancy(board)
     in_check_now = in_check(board, side)
 
-    @inbounds for i in start:stop
+    @inbounds for i = start:stop
         m = pseudo[i]
         if is_move_legal(board, m, side, king_sq, occ, in_check_now)
             n_moves += 1
@@ -104,12 +117,20 @@ function _filter_legal_moves!(board::Board, pseudo,
     return n_moves
 end
 
-function check_piece_moves!(board::Board, pseudo, pseudo_len, gen_func,
-        side, king_sq, occ, in_check_now)
+function check_piece_moves!(
+    board::Board,
+    pseudo,
+    pseudo_len,
+    gen_func,
+    side,
+    king_sq,
+    occ,
+    in_check_now,
+)
     old_len = pseudo_len
     pseudo_len = gen_func(board, pseudo, pseudo_len)
 
-    @inbounds for i in old_len:(pseudo_len - 1)
+    @inbounds for i = old_len:(pseudo_len-1)
         if is_move_legal(board, pseudo[i], side, king_sq, occ, in_check_now)
             return true, pseudo_len
         end
@@ -119,16 +140,26 @@ function check_piece_moves!(board::Board, pseudo, pseudo_len, gen_func,
 end
 
 # Start with king if in check to find legal moves faster
-const GEN_CHECKS_IN_CHECK = (generate_king_moves!, generate_knight_moves!,
-    generate_pawn_moves!, generate_bishop_moves!,
-    generate_rook_moves!, generate_queen_moves!)
+const GEN_CHECKS_IN_CHECK = (
+    generate_king_moves!,
+    generate_knight_moves!,
+    generate_pawn_moves!,
+    generate_bishop_moves!,
+    generate_rook_moves!,
+    generate_queen_moves!,
+)
 
-const GEN_CHECKS_NORMAL = (generate_pawn_moves!, generate_knight_moves!,
-    generate_king_moves!, generate_bishop_moves!,
-    generate_rook_moves!, generate_queen_moves!)
+const GEN_CHECKS_NORMAL = (
+    generate_pawn_moves!,
+    generate_knight_moves!,
+    generate_king_moves!,
+    generate_bishop_moves!,
+    generate_rook_moves!,
+    generate_queen_moves!,
+)
 
 function has_legal_move(board::Board)::Bool
-    pseudo = MVector{MAX_MOVES, Move}(undef)
+    pseudo = MVector{MAX_MOVES,Move}(undef)
     side = board.side_to_move
     king_sq = king_square(board, side)
     occ = occupancy(board)
@@ -138,9 +169,16 @@ function has_legal_move(board::Board)::Bool
 
     gens = in_check_now ? GEN_CHECKS_IN_CHECK : GEN_CHECKS_NORMAL
     @inbounds for gen_func in gens
-        ok,
-        pseudo_len = check_piece_moves!(
-            board, pseudo, pseudo_len, gen_func, side, king_sq, occ, in_check_now)
+        ok, pseudo_len = check_piece_moves!(
+            board,
+            pseudo,
+            pseudo_len,
+            gen_func,
+            side,
+            king_sq,
+            occ,
+            in_check_now,
+        )
         ok && return true
     end
 
@@ -170,11 +208,7 @@ function generate_legal_moves(board::Board)
     return moves[1:n_moves]  # Return only the filled portion
 end
 
-function generate_legal_moves_bishop_magic!(
-        board::Board,
-        moves,
-        pseudo
-)
+function generate_legal_moves_bishop_magic!(board::Board, moves, pseudo)
     pseudo_len = 1
 
     pseudo_len = generate_pawn_moves!(board, pseudo, pseudo_len)

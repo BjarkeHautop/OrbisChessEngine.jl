@@ -26,7 +26,7 @@ const PIECE_IMAGES = Dict(
     Piece.B_BISHOP => joinpath(ASSET_DIR, "b_bishop.png"),
     Piece.B_ROOK => joinpath(ASSET_DIR, "b_rook.png"),
     Piece.B_QUEEN => joinpath(ASSET_DIR, "b_queen.png"),
-    Piece.B_KING => joinpath(ASSET_DIR, "b_king.png")
+    Piece.B_KING => joinpath(ASSET_DIR, "b_king.png"),
 )
 
 # (rotr90 to rotate images to match board orientation with rank 1 at bottom)
@@ -44,14 +44,14 @@ function plot_makie(board::OrbisChessEngine.Board)
 
     light, dark = RGB(0.93, 0.81, 0.65), RGB(0.62, 0.44, 0.27)
 
-    for rank in 1:8, file in 1:8
+    for rank = 1:8, file = 1:8
 
         color = isodd(rank + file) ? dark : light
         poly!(ax, Rect(file - 1, rank - 1, 1, 1); color = color)
     end
 
     for (ptype, bb) in enumerate(board.bitboards)
-        for sq in 0:63
+        for sq = 0:63
             if testbit(bb, sq)
                 file = (sq % 8) + 1
                 rank = (sq ÷ 8) + 1

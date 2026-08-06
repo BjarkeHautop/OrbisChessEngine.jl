@@ -17,18 +17,18 @@ function init_zobrist!()
     ZOBRIST_SIDE[] = rand(rng, UInt64)
 
     # Pieces 12 × 64
-    for p in 1:12, sq in 1:64
+    for p = 1:12, sq = 1:64
 
         ZOBRIST_PIECES[p, sq] = rand(rng, UInt64)
     end
 
     # Castling rights 0..15
-    for i in 0:15
-        ZOBRIST_CASTLING[i + 1] = rand(rng, UInt64)
+    for i = 0:15
+        ZOBRIST_CASTLING[i+1] = rand(rng, UInt64)
     end
 
     # En passant files a..h
-    for f in 1:8
+    for f = 1:8
         ZOBRIST_EP[f] = rand(rng, UInt64)
     end
 end
@@ -44,7 +44,7 @@ function zobrist_hash(board::Board)
         bb = board.bitboards[p]
         while bb != 0
             sq = trailing_zeros(bb) # 0..63
-            h ⊻= ZOBRIST_PIECES[p, sq + 1]
+            h ⊻= ZOBRIST_PIECES[p, sq+1]
             bb &= bb - 1
         end
     end
@@ -55,7 +55,7 @@ function zobrist_hash(board::Board)
     end
 
     # Castling rights
-    h ⊻= ZOBRIST_CASTLING[Int(board.castling_rights) + 1]
+    h ⊻= ZOBRIST_CASTLING[Int(board.castling_rights)+1]
 
     # En passant (file only)
     if board.en_passant != -1

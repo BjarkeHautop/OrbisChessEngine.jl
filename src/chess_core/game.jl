@@ -18,7 +18,10 @@ mutable struct Game
 end
 
 function time_management(
-        remaining_ms::Int, increment_ms::Int, movestogo::Union{Int, Nothing} = nothing)
+    remaining_ms::Int,
+    increment_ms::Int,
+    movestogo::Union{Int,Nothing} = nothing,
+)
     # Base heuristic: split remaining time across moves-to-next-control if
     # given (classical time controls), else assume a flat 30 (sudden death).
     divisor = movestogo === nothing ? 30 : max(movestogo, 1)
@@ -40,10 +43,10 @@ function allocate_time(game::Game)
 end
 
 function search_with_time(
-        game::Game;
-        max_depth::Int = 64,
-        opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
-        verbose::Bool = false
+    game::Game;
+    max_depth::Int = 64,
+    opening_book::Union{Nothing,PolyglotBook} = KOMODO_OPENING_BOOK,
+    verbose::Bool = false,
 )
     # --- Time management ---
     allocated_opt, allocated_max = allocate_time(game)
@@ -51,8 +54,7 @@ function search_with_time(
     max_stop_time = Int(time_ns() ÷ 1_000_000 + allocated_max)
 
     if verbose
-        println("Allocated time (ms): optimal = ", allocated_opt,
-            " max = ", allocated_max)
+        println("Allocated time (ms): optimal = ", allocated_opt, " max = ", allocated_max)
     end
 
     # --- Run iterative deepening ---
@@ -62,7 +64,7 @@ function search_with_time(
         opt_stop_time = opt_stop_time,
         max_stop_time = max_stop_time,
         opening_book = opening_book,
-        verbose = verbose
+        verbose = verbose,
     )
     return result
 end
@@ -90,9 +92,9 @@ engine_move!(game, opening_book = nothing)
 ```
 """
 function engine_move!(
-        game::Game;
-        opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
-        verbose = false
+    game::Game;
+    opening_book::Union{Nothing,PolyglotBook} = KOMODO_OPENING_BOOK,
+    verbose = false,
 )
     tt_clear!()  # reset TT for this search
 
@@ -119,8 +121,14 @@ function engine_move!(
         game.black_time += game.increment
     end
     if verbose
-        println("Move made: ", result.move, " Score: ",
-            result.score, " Time used (ms): ", elapsed)
+        println(
+            "Move made: ",
+            result.move,
+            " Score: ",
+            result.score,
+            " Time used (ms): ",
+            elapsed,
+        )
         println("White time (ms): ", game.white_time, " Black time (ms): ", game.black_time)
     end
 end
@@ -149,9 +157,9 @@ game3 = engine_move(game, opening_book = nothing)
 ```
 """
 function engine_move(
-        game::Game;
-        opening_book::Union{Nothing, PolyglotBook} = KOMODO_OPENING_BOOK,
-        verbose = false
+    game::Game;
+    opening_book::Union{Nothing,PolyglotBook} = KOMODO_OPENING_BOOK,
+    verbose = false,
 )
     game_copy = deepcopy(game)
     engine_move!(game_copy; opening_book = opening_book, verbose = verbose)
@@ -167,7 +175,7 @@ function is_threefold_repetition(board::Board)
     last_index = board.undo_index + 1  # position_history[undo_index + 1] is the current hash
     last_key = board.position_history[last_index]
     n = 0
-    @inbounds for i in 1:last_index
+    @inbounds for i = 1:last_index
         n += board.position_history[i] == last_key ? 1 : 0
     end
     return n >= 3
@@ -205,10 +213,12 @@ function is_insufficient_material(board::Board)
     end
 
     # Count minor pieces
-    w_minors = count_bits(board.bitboards[Piece.W_BISHOP]) +
-               count_bits(board.bitboards[Piece.W_KNIGHT])
-    b_minors = count_bits(board.bitboards[Piece.B_BISHOP]) +
-               count_bits(board.bitboards[Piece.B_KNIGHT])
+    w_minors =
+        count_bits(board.bitboards[Piece.W_BISHOP]) +
+        count_bits(board.bitboards[Piece.W_KNIGHT])
+    b_minors =
+        count_bits(board.bitboards[Piece.B_BISHOP]) +
+        count_bits(board.bitboards[Piece.B_KNIGHT])
 
     # Only kings
     if w_minors == 0 && b_minors == 0

@@ -1,14 +1,9 @@
 using Preferences
 
 const DEFAULT_PREFS = (
-    theme = "dark", light = (
-        light_square_bg = "\e[48;5;230m",
-        dark_square_bg = "\e[48;5;110m"
-    ),
-    dark = (
-        light_square_bg = "\e[48;5;235m",
-        dark_square_bg = "\e[48;5;238m"
-    )
+    theme = "dark",
+    light = (light_square_bg = "\e[48;5;230m", dark_square_bg = "\e[48;5;110m"),
+    dark = (light_square_bg = "\e[48;5;235m", dark_square_bg = "\e[48;5;238m"),
 )
 
 function _get_pref(key::Symbol, default)
@@ -22,15 +17,9 @@ function chessboard_colors()
 
     defaults = theme == "dark" ? DEFAULT_PREFS.dark : DEFAULT_PREFS.light
 
-    light = _get_pref(
-        Symbol(theme * "_light_square_bg"),
-        defaults.light_square_bg
-    )
+    light = _get_pref(Symbol(theme * "_light_square_bg"), defaults.light_square_bg)
 
-    dark = _get_pref(
-        Symbol(theme * "_dark_square_bg"),
-        defaults.dark_square_bg
-    )
+    dark = _get_pref(Symbol(theme * "_dark_square_bg"), defaults.dark_square_bg)
 
     return light, dark, "\e[0m"
 end
@@ -47,7 +36,7 @@ const PIECE_IMAGES = Dict(
     Piece.B_BISHOP => '♗',
     Piece.B_ROOK => '♖',
     Piece.B_QUEEN => '♕',
-    Piece.B_KING => '♔'
+    Piece.B_KING => '♔',
 )
 
 function piece_glyph(ptype::Int, theme::String)
@@ -188,7 +177,7 @@ const PIECE_CHARS = Dict(
     Piece.B_BISHOP => 'b',
     Piece.B_ROOK => 'r',
     Piece.B_QUEEN => 'q',
-    Piece.B_KING => 'k'
+    Piece.B_KING => 'k',
 )
 
 """
@@ -210,8 +199,8 @@ b = Board() # prints the initial chess position
 ```
 """
 function Base.show(io::IO, board::Board)
-    for rank in 7:-1:0
-        for file in 0:7
+    for rank = 7:-1:0
+        for file = 0:7
             sq = rank * 8 + file
             piece_char = '.'
             for (ptype, bb) in enumerate(board.bitboards)
