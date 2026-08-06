@@ -74,6 +74,20 @@ end
     @test isnothing(output)
 end
 
+@testset "Search still returns a move when the root is already a legal draw (regression)" begin
+    # Unlike checkmate/stalemate, a position that's a draw by insufficient
+    # material/threefold/fifty-move still has legal moves. The engine
+    # must still play one instead of returning no move at all, which a
+    # UCI tournament manager treats as an illegal-move forfeit. Found via
+    # a K+N vs K+B self-play game reaching this exact FEN.
+    b = Board(fen = "7b/8/4N3/8/4K3/2k5/8/8 w - - 0 151")
+    @test game_status(b) == :draw_insufficient_material
+
+    result = search(b; depth = 10, opening_book = nothing, time_budget = 2000)
+    @test result !== nothing
+    @test result.move in generate_legal_moves(b)
+end
+
 @testset "Transposition Table Tests" begin
     OrbisChessEngine.tt_clear!()  # ensure empty TT before tests
 
