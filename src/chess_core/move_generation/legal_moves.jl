@@ -1,25 +1,28 @@
 const ROOK_DIRECTIONS = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 const SLIDING_DIRECTIONS = vcat(ROOK_DIRECTIONS, BISHOP_DIRECTIONS)
-"""
-    ray_between(board, king_sq::Int, from_sq::Int) -> Bool
 
-Returns true if moving a piece from `from_sq` could open a sliding attack (rook, bishop, queen)
-towards the king at `king_sq`.
 """
-function ray_between(occ, king_sq, from_sq)
+    king_ray_squares(occ, king_sq) -> UInt64
+
+Bitboard of every square a piece could move from and possibly open a
+sliding discovered check on `king_sq`: for each of the 8 rook/bishop
+directions from `king_sq`, every square out to and including the first
+occupied square in that direction.
+
+Computed once per node.
+"""
+function king_ray_squares(occ, king_sq)
+    squares = zero(UInt64)
     @inbounds for dir in SLIDING_DIRECTIONS
         sq = king_sq
         while true
             sq = next_square(sq, dir)
             sq === nothing && break
-            if sq == from_sq
-                return true
-            elseif ((occ >> sq) & 0x1) != 0
-                break
-            end
+            squares = setbit(squares, sq)
+            testbit(occ, sq) && break
         end
     end
-    return false
+    return squares
 end
 
 """
@@ -58,7 +61,7 @@ function is_move_legal(
     m::Move,
     side::Side,
     king_sq::Int,
-    occ,
+    ray_squares::UInt64,
     in_check_now::Bool,
 )::Bool
     # --- Castling check ---
@@ -74,11 +77,9 @@ function is_move_legal(
     end
 
     # En passant clears the captured pawn's square in addition to m.from, which can
-    # open a discovered check that ray_between (checking only m.from) won't see.
-    if !in_check_now &&
-       !m.en_passant &&
-       !ray_between(occ, king_sq, m.from) &&
-       m.from != king_sq
+    # open a discovered check that ray_squares (marking only squares reachable from
+    # king_sq) won't see.
+    if !in_check_now && !m.en_passant && !testbit(ray_squares, m.from) && m.from != king_sq
         return true
     else
         make_move!(board, m)
@@ -106,10 +107,11 @@ function _filter_legal_moves!(
     king_sq = king_square(board, side)
     occ = occupancy(board)
     in_check_now = in_check(board, side)
+    ray_squares = king_ray_squares(occ, king_sq)
 
     @inbounds for i = start:stop
         m = pseudo[i]
-        if is_move_legal(board, m, side, king_sq, occ, in_check_now)
+        if is_move_legal(board, m, side, king_sq, ray_squares, in_check_now)
             n_moves += 1
             moves[n_moves] = m
         end
@@ -124,14 +126,14 @@ function check_piece_moves!(
     gen_func,
     side,
     king_sq,
-    occ,
+    ray_squares,
     in_check_now,
 )
     old_len = pseudo_len
     pseudo_len = gen_func(board, pseudo, pseudo_len)
 
     @inbounds for i = old_len:(pseudo_len-1)
-        if is_move_legal(board, pseudo[i], side, king_sq, occ, in_check_now)
+        if is_move_legal(board, pseudo[i], side, king_sq, ray_squares, in_check_now)
             return true, pseudo_len
         end
     end
@@ -164,6 +166,7 @@ function has_legal_move(board::Board)::Bool
     king_sq = king_square(board, side)
     occ = occupancy(board)
     in_check_now = in_check(board, side)
+    ray_squares = king_ray_squares(occ, king_sq)
 
     pseudo_len = 1
 
@@ -176,7 +179,7 @@ function has_legal_move(board::Board)::Bool
             gen_func,
             side,
             king_sq,
-            occ,
+            ray_squares,
             in_check_now,
         )
         ok && return true

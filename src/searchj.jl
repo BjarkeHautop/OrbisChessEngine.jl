@@ -53,6 +53,54 @@ function update_history!(side::Side, m::Move, depth::Int)
 end
 
 """
+    gives_check(board::Board, m::Move) -> Bool
+
+Cheap static test for whether making `m` gives check, without the cost of a
+full `make_move!`/`undo_move!` round trip: computes the post-move occupancy
+and the moved (or promoted-to) piece's attack pattern from `m.to`, and tests
+whether it covers the enemy king's square.
+
+Only detects direct checks from the moved/promoted piece itself -- not
+discovered checks, nor a check delivered by the rook on a castling move.
+"""
+function gives_check(board::Board, m::Move)::Bool
+    enemy_king_sq = king_square(board, opposite(board.side_to_move))
+
+    from = Int(m.from)
+    to = Int(m.to)
+    landing_piece = m.promotion != 0 ? Int(m.promotion) : piece_at(board, from)
+
+    occ = zero(UInt64)
+    for p in ALL_PIECES
+        occ |= board.bitboards[p]
+    end
+    occ = clearbit(occ, from)
+    if m.en_passant
+        occ = clearbit(occ, square_index(file_rank(to)[1], file_rank(from)[2]))
+    end
+    occ = setbit(occ, to)
+
+    atk = if landing_piece == Piece.W_PAWN
+        pawn_attack_masks_white[to+1]
+    elseif landing_piece == Piece.B_PAWN
+        pawn_attack_masks_black[to+1]
+    elseif landing_piece == Piece.W_KNIGHT || landing_piece == Piece.B_KNIGHT
+        knight_attack_masks[to+1]
+    elseif landing_piece == Piece.W_BISHOP || landing_piece == Piece.B_BISHOP
+        sliding_attack_from_occupancy(to, occ, BISHOP_DIRECTIONS)
+    elseif landing_piece == Piece.W_ROOK || landing_piece == Piece.B_ROOK
+        sliding_attack_from_occupancy(to, occ, ROOK_DIRECTIONS)
+    elseif landing_piece == Piece.W_QUEEN || landing_piece == Piece.B_QUEEN
+        sliding_attack_from_occupancy(to, occ, BISHOP_DIRECTIONS) |
+        sliding_attack_from_occupancy(to, occ, ROOK_DIRECTIONS)
+    else
+        zero(UInt64)  # king can't give check by moving itself
+    end
+
+    return testbit(atk, enemy_king_sq)
+end
+
+"""
     move_ordering_score(board::Board, m::Move, ply::Int)
 
 Heuristic to score moves for ordering:
@@ -84,8 +132,7 @@ function move_ordering_score(board::Board, m::Move, ply::Int)
     end
 
     # Bonus for checks.
-    make_move!(board, m)
-    if in_check(board, board.side_to_move)
+    if gives_check(board, m)
         score += in_check_bonus
     end
 
@@ -93,7 +140,6 @@ function move_ordering_score(board::Board, m::Move, ply::Int)
     if m.promotion != 0
         score += abs(PIECE_VALUES[m.promotion]) + promotion_bonus
     end
-    undo_move!(board, m)
 
     return score
 end
@@ -403,14 +449,6 @@ function _search(
         end
     end
 
-    hash_before = zobrist_hash(board)
-
-    # TT lookup
-    val, move, hit = tt_probe(hash_before, depth, α, β, ply)
-    if hit
-        return SearchResult(val, move, false, true)
-    end
-
     # Leaf node: quiescence search
     if depth == 0
         return SearchResult(quiescence(board, α, β), NO_MOVE, false, true)
@@ -662,15 +700,6 @@ function _search(
             end
         end
     end
-
-    # TT store
-    node_type = EXACT
-    if best_score <= α
-        node_type = UPPERBOUND
-    elseif best_score >= β
-        node_type = LOWERBOUND
-    end
-    tt_store(hash_before, best_score, depth, node_type, best_move, ply)
 
     return SearchResult(best_score, best_move, false, true)
 end

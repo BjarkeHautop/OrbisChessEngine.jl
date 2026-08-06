@@ -21,11 +21,7 @@ Returns: Int (square index 0..63)
 """
 function king_square(board::Board, side::Side)
     bb = (side == WHITE) ? board.bitboards[Piece.W_KING] : board.bitboards[Piece.B_KING]
-    for sq = 0:63
-        if testbit(bb, sq)
-            return sq
-        end
-    end
+    return trailing_zeros(bb)
 end
 
 """
