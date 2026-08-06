@@ -7,13 +7,7 @@ against other engines.
 
 ## Launching Orbis as a UCI engine
 
-From the root of this repository (or point your GUI/tool at this command):
-
-```bash
-julia --project=. bin/orbis_uci.jl
-```
-
-This starts a synchronous command loop over stdin/stdout, as UCI expects.
+Use the [`run_uci`](@ref) function which starts a synchronous command loop over stdin/stdout, as UCI expects.
 
 ## Supported commands
 
@@ -34,5 +28,55 @@ takes effect once the current search finishes on its own.
 ## Using it with cutechess-cli
 
 To play Orbis against another UCI engine (e.g. Stockfish), or against a previous version
-of itself, see the [Benchmarks](@ref benchmarks) page for example `cutechess-cli`
-invocations.
+of itself, you can for instance use [cutechess-cli](https://github.com/cutechess/cutechess) as the match manager.
+
+### Playing against Stockfish
+
+From the root of this repository, run the following
+to run 40 games of 1/sec against Stockfish adjusted
+to 1800 Elo, with 5 games (each engine uses it's own
+thread per game, so 10 threads).
+
+```bash
+cutechess-cli \
+  -engine name=Orbis cmd=julia arg="--project=." arg="bin/orbis_uci.jl" dir=. proto=uci \
+  -engine name=Stockfish cmd=stockfish proto=uci option.UCI_LimitStrength=true option.UCI_Elo=1800 \
+  -each st=1 timemargin=500 \
+  -rounds 40 \
+  -concurrency 5 \
+  -pgnout results.pgn
+```
+
+## A/B-testing a specific change with self-play
+
+The easiest way to get two independent copies of the engine to play each other is a
+[git worktree](https://git-scm.com/docs/git-worktree), checked out at the commit
+*before* your change.
+
+```bash
+git worktree add ../orbis-baseline <baseline-commit-or-tag>
+```
+
+Then run both as separate `cutechess-cli` engines:
+
+```bash
+cutechess-cli \
+  -engine name=New cmd=julia arg="--project=." arg="bin/orbis_uci.jl" dir=. proto=uci \
+  -engine name=Baseline cmd=julia arg="--project=." arg="bin/orbis_uci.jl" dir=../orbis-baseline proto=uci \
+  -each st=1 timemargin=500 \
+  -rounds 200 -repeat \
+  -concurrency 5 \
+  -sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
+  -pgnout selfplay.pgn
+```
+
+`-sprt elo0=0 elo1=10 alpha=0.05 beta=0.05` runs a
+[Sequential Probability Ratio Test](https://www.chessprogramming.org/Sequential_Probability_Ratio_Test):
+`cutechess-cli` stops the match on its own once there's enough evidence for or against
+"New is at least 10 Elo stronger than Baseline".
+
+Clean up the worktree afterwards with:
+
+```bash
+git worktree remove ../orbis-baseline
+```

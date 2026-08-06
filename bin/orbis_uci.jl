@@ -9,4 +9,4 @@
 
 using OrbisChessEngine
 
-OrbisChessEngine.run_uci()
+run_uci()
