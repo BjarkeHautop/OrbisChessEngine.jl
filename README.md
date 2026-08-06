@@ -17,7 +17,7 @@ Particularly, *OrbisChessEngine* implements:
 - Opening book support
 - Minimax search with alpha–beta pruning, iterative deepening, quiescence search, transposition tables, null move pruning, and move ordering heuristics
 - Evaluation function based on piece-square tables
-- Basic [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol support, via `bin/orbis_uci.jl`
+- Basic [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol support
 
 ## Installation
 

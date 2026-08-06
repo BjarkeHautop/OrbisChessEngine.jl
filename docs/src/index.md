@@ -15,17 +15,6 @@ In the Julia REPL, press `]` to enter the Pkg mode, then run:
 pkg> add OrbisChessEngine
 ```
 
-## Features
-
-- All chess rules
-- Bitboard representation
-- Legal move generation (tested with [perft](https://www.chessprogramming.org/Perft))
-- [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) parsing
-- Opening book support
-- Minimax search with alpha–beta pruning, iterative deepening, quiescence search, transposition tables, null move pruning, and move ordering heuristics
-- Evaluation function based on piece-square tables
-- Basic [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol support, via `bin/orbis_uci.jl`
-
 ## Getting Started
 
 See the [Getting Started](@ref quick_guide) page for installation instructions and basic usage examples
