@@ -5,15 +5,6 @@ making moves, and calling the engine directly from Julia code. To use it as a
 UCI engine from a GUI or a tool like `cutechess-cli` instead, see the
 [UCI guide](@ref uci_guide).
 
-## Installation
-
-`OrbisChessEngine` can be installed directly from the Julia package manager.
-In the Julia REPL, press `]` to enter the Pkg mode, then run:
-
-```julia
-pkg> add OrbisChessEngine
-```
-
 ## Playing Chess
 
 First we load the package:
