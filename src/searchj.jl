@@ -741,7 +741,9 @@ function search_root(board::Board, max_depth::Int;
         if abs(best_result_internal.score) >= MATE_THRESHOLD
             if verbose
                 mate_in = MATE_VALUE - abs(best_result_internal.score)
-                println("Depth $depth | Score: Mate in $mate_in ply | PV: $pv_str")
+                mate_pv_str = join(
+                    string.(extract_root_pv(board, best_result_internal.move, depth)), " ")
+                println("Depth $depth | Score: Mate in $mate_in ply | PV: $mate_pv_str")
             end
 
             break
