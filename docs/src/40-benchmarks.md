@@ -30,10 +30,10 @@ Seems to be barely affect performance.
 
 ## Playing Strength
 
-We estimate Orbis's playing strength directly
+Starting from version 0.3.1 we estimate Orbis's playing strength directly
 by playing it against [Stockfish](https://stockfishchess.org/) at reduced strength
 (via the `UCI_LimitStrength`/`UCI_Elo` options), using
 [cutechess-cli](https://github.com/cutechess/cutechess) as the match manager.
 
-Based on 40 games vs Stockfish 1800 Elo 1s/move it scored 21-17-2 (W/L/D) giving an estimate
-of 1834.9 ± 108.8 Elo.
+Based on 16 games vs Stockfish 1800 Elo 1s/move it scored 12-4-0 (W/L/D) giving an estimate
+of 1990.8 ± 267.1 Elo.
