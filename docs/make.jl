@@ -1,5 +1,6 @@
 using OrbisChessEngine
 using Documenter
+using DocumenterCodeBlocks
 
 DocMeta.setdocmeta!(
     OrbisChessEngine,
@@ -25,6 +26,7 @@ makedocs(;
         size_threshold_ignore = ["05-quick-guide.md"],
     ),
     pages = ["index.md"; numbered_pages],
+    plugins = [CodeBlocks()],
 )
 
 deploydocs(; repo = "github.com/BjarkeHautop/OrbisChessEngine.jl")

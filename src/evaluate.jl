@@ -227,20 +227,19 @@ end
 """
     evaluate(board::Board) -> Int
 
-Evaluate a position from White’s perspective using piece-square tables.
+Evaluate a position from White's perspective using piece-square tables.
 
-Purely a static material+PST sum — it does **not** check for checkmate,
-stalemate, or draws, since generating legal moves to check for those on
-every call would be too expensive to run at every quiescence node.
-Checkmate/stalemate/draw detection is `_search`'s responsibility, since it
-already generates legal moves for every node it visits regardless.
-- board: Board struct
+A static material+PST sum only: it does not check for checkmate, stalemate,
+or draws (too expensive to run at every quiescence node), which is instead
+`_search`'s responsibility since it already generates legal moves anyway.
 
 # Example
-```julia
-board = Board()
-evaluate(board)
-````
+```jldoctest
+julia> board = Board();
+
+julia> evaluate(board)
+0
+```
 """
 function evaluate(board::Board)
     score = 0

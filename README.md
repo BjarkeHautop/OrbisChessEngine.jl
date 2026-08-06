@@ -15,7 +15,7 @@ Particularly, *OrbisChessEngine* implements:
 - Legal move generation (tested with [perft](https://www.chessprogramming.org/Perft))
 - [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation) parsing
 - Opening book support
-- Minimax search with alpha–beta pruning, iterative deepening, quiescence search, transposition tables, null move pruning, and move ordering heuristics
+- Minimax search with alpha-beta pruning, iterative deepening, quiescence search, transposition tables, null move pruning, and move ordering heuristics
 - Evaluation function based on piece-square tables
 - Basic [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol support
 
@@ -51,7 +51,7 @@ instead.
 
 ## Usage as a UCI engine
 
-Orbis also speaks a subset of the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, so it can be driven by a UCI-speaking GUI or a tool like `cutechess-cli`. Launch it as a subprocess with:
+Orbis also speaks a subset of the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) protocol, so it can be driven by a UCI-speaking GUI or a tool like `cutechess-cli`. Call `run_uci()` to start the command loop, or point a tool that needs a shell command at `bin/orbis_uci.jl`, a thin wrapper that just calls `run_uci()`:
 
 ```bash
 julia --project=. bin/orbis_uci.jl

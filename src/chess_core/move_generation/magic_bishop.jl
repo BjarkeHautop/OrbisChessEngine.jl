@@ -70,7 +70,7 @@ using Random
 
 """
 Try to find a magic number for a given square.
-- sq: square index 0–63
+- sq: square index 0-63
 - masks: precomputed mask table (bishop or rook)
 - attack_fn: function (sq, occ) → attacks
 - tries: number of random candidates to attempt

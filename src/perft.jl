@@ -5,15 +5,18 @@ using StaticArrays
 """
     perft(board::Board, depth::Int) -> Int
 
-Compute the number of leaf nodes reachable from the given board position at the given depth.
-It uses the Board struct to immitate [search](@ref) behavior. In particular,
-this means it still computes zobrist hashes and updates evaluation scores
+Compute the number of leaf nodes reachable from the given board position at
+the given depth ([perft](https://www.chessprogramming.org/Perft)).
+It uses the Board struct to imitate [search](@ref) behavior. In particular,
+this means it still computes Zobrist hashes and updates evaluation scores,
 slowing it down compared to a minimal perft implementation.
 
 # Example
-```julia
-board = Board()
-perft(board, 5)
+```jldoctest
+julia> board = Board();
+
+julia> perft(board, 3)
+8902
 ```
 """
 function perft(board::Board, depth::Int)
@@ -66,16 +69,19 @@ end
 """
     perft_fast(board::Board, depth::Int) -> Int
 
-Compute the number of leaf nodes reachable from the given board position at the given depth
-using multiple threads at the root.
-It uses the Board struct to immitate [search](@ref) behavior. In particular,
-this means it still computes zobrist hashes and updates evaluation scores
+Compute the number of leaf nodes reachable from the given board position at
+the given depth ([perft](https://www.chessprogramming.org/Perft)) using
+multiple threads at the root.
+It uses the Board struct to imitate [search](@ref) behavior. In particular,
+this means it still computes Zobrist hashes and updates evaluation scores,
 slowing it down compared to a minimal perft implementation.
 
 # Example
-```julia
-board = Board()
-perft_fast(board, 5)
+```jldoctest
+julia> board = Board();
+
+julia> perft_fast(board, 3)
+8902
 ```
 """
 function perft_fast(board::Board, depth::Int)

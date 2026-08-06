@@ -11,17 +11,17 @@ Use the [`run_uci`](@ref) function which starts a synchronous command loop over 
 
 ## Supported commands
 
-- `uci` / `isready` / `ucinewgame` — standard handshake.
-- `position startpos moves ...` / `position fen <fen> moves ...` — set up a position,
+- `uci` / `isready` / `ucinewgame`: standard handshake.
+- `position startpos moves ...` / `position fen <fen> moves ...`: set up a position,
   optionally followed by a sequence of moves in long algebraic notation.
-- `go depth <n>` — search to a fixed depth.
-- `go movetime <ms>` — search for a fixed number of milliseconds.
-- `go wtime <ms> btime <ms> [winc <ms> binc <ms>] [movestogo <n>]` — search using the
+- `go depth <n>`: search to a fixed depth.
+- `go movetime <ms>`: search for a fixed number of milliseconds.
+- `go wtime <ms> btime <ms> [winc <ms> binc <ms>] [movestogo <n>]`: search using the
   clock/increment (and `movestogo`, if provided) to decide how long to think, the same
   time management used by [`engine_move!`](@ref) for a [`Game`](@ref).
 - `stop` / `quit`.
 
-`go infinite`/`stop` do not yet interrupt an in-progress search — search currently runs
+`go infinite`/`stop` do not yet interrupt an in-progress search. Search currently runs
 synchronously to completion rather than in a cancellable background task, so `stop` only
 takes effect once the current search finishes on its own.
 
@@ -34,8 +34,8 @@ of itself, you can for instance use [cutechess-cli](https://github.com/cutechess
 
 From the root of this repository, run the following
 to run 40 games of 1/sec against Stockfish adjusted
-to 1800 Elo, with 5 games (each engine uses it's own
-thread per game, so 10 threads).
+to 1800 Elo, 5 games running in parallel (each engine
+uses its own thread per game, so 10 threads total).
 
 ```bash
 cutechess-cli \

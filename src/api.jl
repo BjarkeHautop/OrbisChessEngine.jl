@@ -5,8 +5,9 @@ const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 Construct a chess `Board` object from a FEN string.
 
-- `fen::String`: The Forsyth-Edwards Notation string representing the board position.
-  Defaults to `START_FEN` (the standard starting position).
+- `fen::String`: a [FEN](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation)
+  string representing the board position. Defaults to `START_FEN` (the
+  standard starting position).
 
 # Example
 ```julia
@@ -114,7 +115,7 @@ end
 Construct a Move from a long algebraic string like "e2e4" or "e7e8=Q",
 using the board to infer capture, en passant, and castling.
 - `board`: current Board state
-- `str`: move string in long algebraic notation
+- `str`: move string in [long algebraic notation](https://www.chessprogramming.org/Algebraic_Chess_Notation#Long_Algebraic_Notation)
 
 Captures are inferred based on the board state (so "e4d5" captures if d5 is occupied by opponent).
 Castling can be specified with "O-O" (kingside) or "O-O-O" (queenside).
@@ -124,14 +125,21 @@ Note, that this function does not validate the legality of the move; it only con
 
 # Example
 
-```julia
-board = Board()
-mv = Move(board, "e2e4")
-make_move!(board, mv)
+Illegal moves are also allowed; legality is not checked here.
 
-# Illegal moves are also allowed
-mv = Move(board, "d7d4")
-make_move!(board, mv)
+```jldoctest
+julia> board = Board();
+
+julia> mv = Move(board, "e2e4")
+e2e4
+
+julia> make_move!(board, mv)
+
+julia> mv = Move(board, "d7d4")
+d7d4
+
+julia> make_move!(board, mv)
+```
 """
 function Move(board::Board, str::AbstractString)
     # --- Handle castling shortcuts ---

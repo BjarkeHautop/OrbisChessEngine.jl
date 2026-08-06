@@ -1,6 +1,6 @@
 # [Getting Started: Playing Interactively](@id quick_guide)
 
-This guide covers using OrbisChessEngine as a Julia package — creating positions,
+This guide covers using OrbisChessEngine as a Julia package: creating positions,
 making moves, and calling the engine directly from Julia code. To use it as a
 UCI engine from a GUI or a tool like `cutechess-cli` instead, see the
 [UCI guide](@ref uci_guide).

@@ -37,7 +37,7 @@ end
 
 """
 Update the history heuristic for a quiet move that caused a beta cutoff.
-Only quiet (non-capture) moves are tracked — captures already order via
+Only quiet (non-capture) moves are tracked; captures already order via
 SEE. Score is bumped by `depth^2` (moves that caused cutoffs deeper in
 the tree are weighted more heavily), clamped at `HISTORY_MAX`.
 - side: the side that made the move
@@ -323,11 +323,11 @@ end
 
 Result of a search operation.
 
-- `score`: The evaluation score of the position.
-- `move`: The best move found.
-- `from_book`: Boolean indicating if the move was from the opening book.
-- `complete`: `false` if this node was cut short by the time budget before
-  finishing — such results must never be compared or trusted as real values.
+- `score`: the evaluation score of the position, from White's perspective.
+- `move`: the best move found (`NO_MOVE` if none was found).
+- `from_book`: whether `move` came from the opening book rather than search.
+- `complete`: `false` if this result was cut short by the time budget before
+  finishing.
 """
 struct SearchResult
     score::Int
@@ -884,14 +884,16 @@ Set to `nothing` to disable. See [`load_polyglot_book`](@ref) to load custom boo
   nodes ... nps ... pv ...` line at each depth (score is relative to the side
   to move, per the UCI spec, unlike the always-White-relative `score` field
   on the returned `SearchResult`)
-- `time_budget`: soft time limit in milliseconds — the search stops after
+- `time_budget`: soft time limit in milliseconds; the search stops after
   the current depth *finishes* once this is reached, unless the result
   looks unstable (see `search_root`), in which case it keeps going up to
   `max_time_budget`
 - `max_time_budget`: hard time limit in milliseconds; can cut a depth off
   mid-search. Defaults to `time_budget` (no extension allowed)
 Returns:
-- `SearchResult` containing the best move and its evaluation score (or `nothing` if no move found)
+- a [`SearchResult`](@ref). `move` is `NO_MOVE` if no legal move exists (e.g.
+  checkmate/stalemate); see `SearchResult`'s docstring for the `complete`
+  field's meaning.
 
 # Example
 ```julia

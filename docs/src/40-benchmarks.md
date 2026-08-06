@@ -35,5 +35,5 @@ by playing it against [Stockfish](https://stockfishchess.org/) at reduced streng
 (via the `UCI_LimitStrength`/`UCI_Elo` options), using
 [cutechess-cli](https://github.com/cutechess/cutechess) as the match manager.
 
-Based on 16 games vs Stockfish 1800 Elo 1s/move it scored 12-4-0 (W/L/D) giving an estimate
-of 1990.8 ± 267.1 Elo.
+Based on 40 games vs Stockfish 1900 Elo 1s/move it scored 20-20-0 (W/L/D) giving an estimate
+of 1900 ± 111.2 Elo.

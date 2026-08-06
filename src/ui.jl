@@ -51,7 +51,7 @@ function piece_glyph(ptype::Int, theme::String)
 end
 
 """
-    plot(board::Board; board_orientation = :white, io::IO = stdout)
+    plot(x::Union{Board,Game}; board_orientation = :white, io::IO = stdout)
 Display a chess board.
 
 By default this prints a colored board to the terminal using Unicode chess
@@ -59,7 +59,7 @@ piece characters. If a Makie backend (`CairoMakie`, `GLMakie`, `WGLMakie`, ...)
 together with `FileIO` and `Images` are loaded, `plot` instead returns a
 graphical `Makie.Figure` of the board (`board_orientation` and `io` are
 ignored in that case).
-- `board`: Board struct
+- `x`: a `Board` or `Game` to display
 - `board_orientation`: `:white` (default) or `:black` to set the perspective
 - `io`: IO stream to print to (default: `stdout`)
 
@@ -86,10 +86,12 @@ import CairoMakie, FileIO, Images
 plot(board)
 ```
 
-If you have issues with the piece characters not displaying correctly,
-consider using another font. We recommend "DejaVu Sans Mono" available at https://dejavu-fonts.github.io/.
+If the piece characters don't display correctly, try another font; we
+recommend ["DejaVu Sans Mono"](https://dejavu-fonts.github.io/).
 """
-function plot(board::Board; board_orientation = :white, io::IO = stdout)
+function plot(x::Union{Board,Game}; board_orientation = :white, io::IO = stdout)
+    board = x isa Game ? x.board : x
+
     ext = Base.get_extension(OrbisChessEngine, :OrbisChessEngineMakieExt)
     ext !== nothing && return ext.plot_makie(board)
 
@@ -134,35 +136,6 @@ function plot(board::Board; board_orientation = :white, io::IO = stdout)
     end
 end
 
-"""
-    plot(game::Game; board_orientation = :white, io::IO = stdout)
-Display a chess board (see [`plot(::Board)`](@ref) for details, including the
-Makie backend behavior).
-- `game`: Game struct
-- `board_orientation`: `:white` (default) or `:black` to set the perspective
-- `io`: IO stream to print to (default: `stdout`)
-
-# Example
-```julia
-game = Game()
-plot(game)
-
-# Change orientation
-plot(game; board_orientation = :black)
-
-# Change plot preference colors
-using Preferences
-set_preferences!(
-    OrbisChessEngine,
-    "theme" => "light",
-)
-plot(game)
-```
-"""
-function plot(game::Game; board_orientation = :white, io::IO = stdout)
-    plot(game.board; board_orientation = board_orientation, io = io)
-end
-
 import Base: show
 
 const PIECE_CHARS = Dict(
@@ -181,9 +154,10 @@ const PIECE_CHARS = Dict(
 )
 
 """
-    Base.show(io::IO, board::Board)
+    Base.show(io::IO, x::Union{Board,Game})
 
-Display a simple ASCII representation of the given `Board` in the terminal.
+Display a simple ASCII representation of the given `Board` (or a `Game`'s
+board) in the terminal.
 
 Each square shows either a piece or a dot `.` for empty squares. Piece symbols:
 
@@ -198,7 +172,9 @@ The board is printed with rank 8 at the top and file `a` on the left.
 b = Board() # prints the initial chess position
 ```
 """
-function Base.show(io::IO, board::Board)
+function Base.show(io::IO, x::Union{Board,Game})
+    board = x isa Game ? x.board : x
+
     for rank = 7:-1:0
         for file = 0:7
             sq = rank * 8 + file
@@ -213,26 +189,4 @@ function Base.show(io::IO, board::Board)
         end
         println(io)
     end
-end
-
-"""
-    Base.show(io::IO, game::Game)
-
-Display a simple ASCII representation of the given `Board` in the terminal.
-
-Each square shows either a piece or a dot `.` for empty squares. Piece symbols:
-
-- White: `P` (pawn), `N` (knight), `B` (bishop), `R` (rook), `Q` (queen), `K` (king)
-- Black: `p` (pawn), `n` (knight), `b` (bishop), `r` (rook), `q` (queen), `k` (king)
-
-The board is printed with rank 8 at the top and file `a` on the left.
-
-# Example
-
-```julia
-g = Game() # prints the initial chess position
-```
-"""
-function Base.show(io::IO, game::Game)
-    show(io, game.board)
 end

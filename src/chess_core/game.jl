@@ -245,12 +245,11 @@ function is_insufficient_material(board::Board)
 end
 
 """
-    game_status(board::Board) -> Symbol
+    game_status(x::Union{Board,Game}) -> Symbol
 
-Return the current game status (checkmate, stalemate, draw, timeout, or ongoing).
+Return the current game status.
 
-- `game`: Game struct
-Returns: Symbol — one of
+Returns one of:
   - `:checkmate_white`
   - `:checkmate_black`
   - `:stalemate`
@@ -261,13 +260,25 @@ Returns: Symbol — one of
   - `:timeout_black`
   - `:ongoing`
 
+Passing a `Game` additionally checks each side's clock for `:timeout_white`/
+`:timeout_black`, which a bare `Board` (no time control) cannot detect.
+
 # Example
-```julia
-board = Board()
-game_status(board)
+```jldoctest
+julia> board = Board();
+
+julia> game_status(board)
+:ongoing
+
+julia> game = Game();
+
+julia> game_status(game)
+:ongoing
 ```
 """
-function game_status(board::Board)
+function game_status(x::Union{Board,Game})
+    board = x isa Game ? x.board : x
+
     if !has_legal_move(board)
         if in_check(board, board.side_to_move)
             return (board.side_to_move == WHITE) ? :checkmate_black : :checkmate_white
@@ -284,42 +295,13 @@ function game_status(board::Board)
         return :draw_fiftymove
     end
 
-    return :ongoing
-end
-
-"""
-    game_status(game::Game) -> Symbol
-
-Return the current game status (checkmate, stalemate, draw, timeout, or ongoing).
-
-- `game`: Game struct
-Returns: Symbol — one of
-  - `:checkmate_white`
-  - `:checkmate_black`
-  - `:stalemate`
-  - `:draw_threefold`
-  - `:draw_fiftymove`
-  - `:draw_insufficient_material`
-  - `:timeout_white`
-  - `:timeout_black`
-  - `:ongoing`
-# Example
-```julia
-game = Game()
-game_status(game)
-```
-"""
-function game_status(game::Game)
-    status = game_status(game.board)
-
-    # If the position is still ongoing, check time conditions
-    if status == :ongoing
-        if game.white_time <= 0
+    if x isa Game
+        if x.white_time <= 0
             return :timeout_white  # White flagged
-        elseif game.black_time <= 0
+        elseif x.black_time <= 0
             return :timeout_black  # Black flagged
         end
     end
 
-    return status
+    return :ongoing
 end

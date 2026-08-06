@@ -2,11 +2,13 @@
 BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+DocumenterCodeBlocks = "b6400b83-267f-4b55-9fd8-bffc853bdfd8"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
 Images = "916415d5-f1e6-5110-898d-aaa5f9f070e0"
 OrbisChessEngine = "2eacc985-a635-41e1-b67f-45fa7ceb5b4d"
 
 [compat]
 CairoMakie = "0.15.13"
+DocumenterCodeBlocks = "1"
 FileIO = "1.20.0"
 Images = "0.26.2"

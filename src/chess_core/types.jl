@@ -69,14 +69,16 @@ using StaticArrays
 """
     Board
 
-A chess board representation using bitboards.
+A chess board representation using [bitboards](https://www.chessprogramming.org/Bitboards).
 
 - `bitboards`: A fixed-size vector where each element corresponds to a piece type's bitboard.
 - `side_to_move`: The side to move.
 - `castling_rights`: A 4-bit integer representing castling rights (KQkq).
 - `en_passant`: The square index (0-63) for en passant target, or -1 if none.
-- `halfmove_clock`: The number of halfmoves since the last capture or pawn move (for the 50-move rule).
-- `position_history`: A vector of position Zobrist hashes for detecting threefold repetition.
+- `halfmove_clock`: The number of halfmoves since the last capture or pawn move (for the
+  [fifty-move rule](https://en.wikipedia.org/wiki/Fifty-move_rule)).
+- `position_history`: A vector of position [Zobrist hashes](https://www.chessprogramming.org/Zobrist_Hashing)
+  for detecting threefold repetition.
 - `undo_stack`: A stack of `UndoInfo` structs for unmaking moves.
 - `undo_index`: The current index in the undo stack.
 - `eval_score`: Cached evaluation score from White's point of view.

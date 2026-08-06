@@ -26,7 +26,8 @@ end
 """
     load_polyglot_book(path::String) -> PolyglotBook
 
-Load a Polyglot opening book from the specified binary file. See for example
+Load a [Polyglot](https://www.chessprogramming.org/PolyGlot) opening book from
+the specified binary file. See for example
 [free-opening-books](https://github.com/gmcheems-org/free-opening-books)
 for several free Polyglot book files.
 """
