@@ -59,8 +59,18 @@ julia --project=. bin/orbis_uci.jl
 
 See the [UCI guide](https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/10-uci-guide/) for supported commands.
 
-## Resources
+## Contributing
 
-View the documentation at [https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/](https://BjarkeHautop.github.io/OrbisChessEngine.jl/dev/), including an estimate of Orbis's playing strength and instructions for reproducing it on the "Benchmarks" page.
+All contributions are welcome!
+
+If you found a bug, if possible try to create a minimal working example, you can for
+instance use the package [MinimalWorkingExamples.jl](https://github.com/BjarkeHautop/MinimalWorkingExamples.jl) to help do this, which will ensure it's reproducible, and
+generate Markdown code automatically.
+
+For PRs, if you want to help improve the engine strength, please test your proposed
+changes against the current version of the engine. See [A/B-testing a specific change
+with self-play](https://BjarkeHautop.github.io/OrbisChessEngine.jl/stable/10-uci-guide/#A/B-testing-a-specific-change-with-self-play) for details.
+
+## Resources
 
 Visit chess programming wiki for useful articles on chess engine programming: [https://www.chessprogramming.org/Main_Page](https://www.chessprogramming.org/Main_Page).
